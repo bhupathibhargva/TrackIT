@@ -1,6 +1,8 @@
 package com.trackit.user.goals.controller;
 
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,39 +12,32 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.trackit.user.goals.dao.GoalRepository;
 import com.trackit.user.goals.models.Goal;
+import com.trackit.user.goals.service.TrackITService;
 
 @RestController
 public class TrackITController{
     
 
-	  @Autowired 
-	  GoalRepository repository;
+	/*@Autowired 
+	GoalRepository repository;*/
+	@Autowired
+	TrackITService service;
 	
 	@GetMapping("/hello")
-    public String sayHello(@RequestParam("id") String id) {
-		Goal goal = new Goal();
-		System.err.println(repository.count() +" " +repository.findAll() +" " +repository.findByName("wow").get(0).getName());
-        return  id;
+    public String hello(@RequestParam("id") String id) 
+	{
+		return  service.sayHello(id);
     } 
 	
 	@PostMapping("/add")
-    public String addGoal(@RequestBody Goal goal) {
-		String msg = "";
-		System.err.println();
-		if(null != goal){
-			repository.save(goal);	
-		}
-		else{
-			msg = "please pass the goal object{ name:goal , type:type}";
-		}
-		
-		if(null == repository.findByName(goal.getName()) || repository.findByName(goal.getName()).isEmpty()){
-			msg = "goal not added please check the goal details again";
-		}
-		else{
-			msg = repository.findByName(goal.getName()).get(0).getName() + " has been added sucessfully";
-		}
-		
-        return  msg;
+    public String addGoal(@RequestBody Goal goal) 
+	{
+        return  service.addGoal(goal);
     } 
+	
+	@GetMapping("/goals")
+	public List<Goal> goals(@RequestParam("userid") Integer userid)
+	{		
+		return service.getGoals(userid);
+	}
 }

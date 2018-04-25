@@ -4,30 +4,50 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
+import com.trackit.user.goals.controller.TrackITController;
 import com.trackit.user.goals.dao.GoalRepository;
-import com.trackit.user.goals.dao.UserRepository;
 import com.trackit.user.goals.models.Goal;
-import com.trackit.user.goals.models.User;
 
-@RestController
+@Service
 public class TrackITService {
 	
 	@Autowired 
 	GoalRepository goalRepository;
-	@Autowired
-	UserRepository userRepository;
 	
-	@GetMapping("/goals")
-	public void getGoals(@RequestParam("userid") Integer userid)
+	public String sayHello(String id) {
+		System.err.println(goalRepository.count() +" " +goalRepository.findAll() +" " +goalRepository.findByName("wow").get(0).getName());
+        return  id;
+    } 
+	
+    public String addGoal(Goal goal) {
+		String msg = "";
+		System.err.println();
+		if(null != goal){
+			goalRepository.save(goal);	
+		}
+		else{
+			msg = "please pass the goal object{ name:goal , type:type}";
+		}
+		
+		if(null == goalRepository.findByName(goal.getName()) || goalRepository.findByName(goal.getName()).isEmpty()){
+			msg = "goal not added please check the goal details again";
+		}
+		else{
+			msg = goalRepository.findByName(goal.getName()).get(0).getName() + " has been added sucessfully";
+		}
+		
+        return  msg;
+    } 
+	
+	public List<Goal> getGoals(Integer userid)
 	{
 		List<Goal> userGoals = new ArrayList<>();
 		List<Goal> goals = new ArrayList<>();
-		int count = 1;
 		
 		goals = (List<Goal>) goalRepository.findAll();
 		
@@ -38,16 +58,8 @@ public class TrackITService {
 				userGoals.add(goal);
 			}
 		}
-		System.out.println("User with " + userid + " has following goals");
-		for (Goal goal : userGoals) 
-		{
-			System.out.println();
-			System.out.println("Goal: " + count);
-			System.out.println("Goal Identifier: " + goal.getId());
-			System.out.println("Goal Name: " + goal.getName());
-			System.out.println("Goal Type: " + goal.getType());
-			count++;
-		}
+		
+		return userGoals;
 	}
 
 }
