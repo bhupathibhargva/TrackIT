@@ -32,7 +32,7 @@ jobs:
       - name: Build
         run: cd client && npm run build
         env:
-          VITE_BASE_URL: /trackit/
+          VITE_BASE_URL: /TrackIT/
 
       - uses: actions/upload-pages-artifact@v3
         with:
