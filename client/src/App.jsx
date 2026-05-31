@@ -547,13 +547,13 @@ function SettingsModal({ apiKey: initial, onSave, onClose }) {
           <h2 style={{ fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:600 }}>Settings</h2>
           <button onClick={onClose} style={{ background:"none",border:"none",fontSize:20,color:"#8B8278",cursor:"pointer" }}>✕</button>
         </div>
-        <Field label="Anthropic API Key">
+        <Field label="Gemini API Key">
           <input type="password" value={key} onChange={e=>setKey(e.target.value)}
-            placeholder="sk-ant-..." autoFocus style={iStyle} />
+            placeholder="AIza..." autoFocus style={iStyle} />
         </Field>
         <p style={{ fontSize:12,color:"#8B8278",marginTop:8,lineHeight:1.6 }}>
-          Get a free key at <b>console.anthropic.com</b> → API Keys.<br/>
-          It is stored only in your browser and never sent anywhere except Anthropic.
+          Get a free key at <b>aistudio.google.com</b> → Get API Key.<br/>
+          Stored only in your browser — never sent anywhere except Google.
         </p>
         <div style={{ display:"flex",gap:10,marginTop:20 }}>
           <button onClick={onClose} style={{ flex:1,padding:"11px",border:"1px solid #E2DAD0",borderRadius:8,background:"white",fontSize:14,color:"#5A5248",cursor:"pointer" }}>Cancel</button>
@@ -636,12 +636,14 @@ export default function App() {
 
   const switchUser = async (u) => { setUser(u); await saveUser(u); };
 
-  const aiHeaders = () => ({
-    "Content-Type": "application/json",
-    "x-api-key": apiKey,
-    "anthropic-version": "2023-06-01",
-    "anthropic-dangerous-direct-browser-access": "true",
+  const geminiUrl = () =>
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const geminiCall = (prompt) => fetch(geminiUrl(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 1500 } }),
   });
+  const geminiText = (data) => data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
   // AI: Auto-schedule
   const autoSchedule = async () => {
@@ -649,19 +651,14 @@ export default function App() {
     setAiLoading(true);
     const toSched = tasks.filter(t=>!t.done&&!t.recurrence);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:aiHeaders(),
-        body:JSON.stringify({ model:"claude-sonnet-4-20250514",max_tokens:1000,
-          messages:[{role:"user",content:
+      const res = await geminiCall(
 `Schedule tasks for Bhargav & Rupa (couple with toddler), week ${WEEK[0]}–${WEEK[6]}.
 Tasks: ${JSON.stringify(toSched.map(t=>({id:t.id,title:t.title,category:t.category,priority:t.priority,assignee:t.assignee,duration:t.duration,dueDate:t.dueDate})))}
 Rules: Workouts 06:00–07:30 weekday mornings. Toddler 08:30–11:00. Work blocks Mon–Fri 09:00–18:00. Grocery Sat/Sun mornings or weekday evenings 19:30+. Date night Sat 19:30+. Family dinner Sun 17:00. P1→Mon-Tue, P2→Wed-Fri, P3+→weekend. Honour dueDate.
 Return ONLY JSON array: [{"id":"...","scheduledDate":"YYYY-MM-DD","scheduledTime":"HH:MM"}]`
-          }]
-        })
-      });
+      );
       const data = await res.json();
-      const sched = JSON.parse((data.content?.[0]?.text||"[]").replace(/```json|```/g,"").trim());
+      const sched = JSON.parse((geminiText(data)||"[]").replace(/```json|```/g,"").trim());
       const updated = tasks.map(t=>{ const s=sched.find(x=>x.id===t.id); return s?{...t,scheduledDate:s.scheduledDate,scheduledTime:s.scheduledTime}:t; });
       await persist(updated);
       pushNotif("Family HQ","Week scheduled! "+sched.length+" tasks placed.");
@@ -678,19 +675,14 @@ Return ONLY JSON array: [{"id":"...","scheduledDate":"YYYY-MM-DD","scheduledTime
     const overdue = tasks.filter(t=>!t.done&&t.dueDate&&t.dueDate<TODAY);
     if (!overdue.length) { setAiLog(l=>[...l,{role:"ai",text:"No overdue tasks — you're on top of it! 🎉"}]); setView("ai"); setAiLoading(false); return; }
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:aiHeaders(),
-        body:JSON.stringify({ model:"claude-sonnet-4-20250514",max_tokens:1000,
-          messages:[{role:"user",content:
+      const res = await geminiCall(
 `Reprioritize these overdue tasks for Bhargav & Rupa. Assign new priority (1=Critical–5=Someday) and reschedule this week.
 Overdue: ${JSON.stringify(overdue.map(t=>({id:t.id,title:t.title,category:t.category,priority:t.priority,dueDate:t.dueDate,assignee:t.assignee})))}
 Week dates: ${WEEK.join(", ")}
 Return ONLY JSON: [{"id":"...","priority":1,"scheduledDate":"YYYY-MM-DD","scheduledTime":"HH:MM"}]`
-          }]
-        })
-      });
+      );
       const data = await res.json();
-      const updates = JSON.parse((data.content?.[0]?.text||"[]").replace(/```json|```/g,"").trim());
+      const updates = JSON.parse((geminiText(data)||"[]").replace(/```json|```/g,"").trim());
       const updated = tasks.map(t=>{ const u=updates.find(x=>x.id===t.id); return u?{...t,...u}:t; });
       await persist(updated);
       setAiLog(l=>[...l,{role:"ai",text:`✅ Reprioritized and rescheduled ${updates.length} overdue tasks.`}]);
@@ -706,10 +698,7 @@ Return ONLY JSON: [{"id":"...","priority":1,"scheduledDate":"YYYY-MM-DD","schedu
     if (!apiKey) { setShowSettings(true); return; }
     setAiInput(""); setAiLog(l=>[...l,{role:"user",text:msg}]); setAiLoading(true);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:aiHeaders(),
-        body:JSON.stringify({ model:"claude-sonnet-4-20250514",max_tokens:1000,
-          messages:[{role:"user",content:
+      const res = await geminiCall(
 `Manage tasks for Bhargav & Rupa (toddler family). Current tasks: ${JSON.stringify(tasks.map(t=>({id:t.id,title:t.title,category:t.category,priority:t.priority,assignee:t.assignee,done:t.done,scheduledDate:t.scheduledDate,recurrence:t.recurrence})))}
 User (${user}): "${msg}"
 Return ONLY one of these JSON actions (no markdown):
@@ -717,11 +706,9 @@ Return ONLY one of these JSON actions (no markdown):
 {"action":"update","id":"...","changes":{...}}
 {"action":"delete","id":"..."}
 {"action":"chat","message":"..."}`
-          }]
-        })
-      });
+      );
       const data = await res.json();
-      const result = JSON.parse((data.content?.[0]?.text||"{}").replace(/```json|```/g,"").trim());
+      const result = JSON.parse((geminiText(data)||"{}").replace(/```json|```/g,"").trim());
       if (result.action==="add") {
         const nt={...result.task,id:uid()};
         await persist([...tasks,nt]);
