@@ -31,23 +31,25 @@ const SEED = [
   { id:"s12", title:"Park picnic",               category:"date",    priority:3, assignee:"Both",    done:false, dueDate:null,         scheduledDate:null,         scheduledTime:null,  duration:180, notes:"With the toddler",       recurrence:null,     completedDates:[] },
 ];
 
-// ── Shared Storage (both users see the same data) ─────────────────────────────
+// ── Storage (localStorage) ────────────────────────────────────────────────────
 async function loadData() {
   try {
-    const r = await window.storage.get("hq-v5", true);
-    if (r) { const p = JSON.parse(r.value); return { tasks: p.tasks || SEED, ver: p._v || 0 }; }
+    const raw = localStorage.getItem("hq-v5");
+    if (raw) { const p = JSON.parse(raw); return { tasks: p.tasks || SEED, ver: p._v || 0 }; }
   } catch {}
   return { tasks: SEED, ver: 0 };
 }
 async function persistData(tasks) {
   const ver = Date.now();
-  try { await window.storage.set("hq-v5", JSON.stringify({ tasks, _v: ver }), true); } catch {}
+  try { localStorage.setItem("hq-v5", JSON.stringify({ tasks, _v: ver })); } catch {}
   return ver;
 }
 async function loadUser() {
-  try { const r = await window.storage.get("hq-user"); return r?.value || "Bhargav"; } catch { return "Bhargav"; }
+  try { return localStorage.getItem("hq-user") || "Bhargav"; } catch { return "Bhargav"; }
 }
-async function saveUser(u) { try { await window.storage.set("hq-user", u); } catch {} }
+async function saveUser(u) { try { localStorage.setItem("hq-user", u); } catch {} }
+function loadApiKey() { try { return localStorage.getItem("hq-apikey") || ""; } catch { return ""; } }
+function saveApiKey(k) { try { localStorage.setItem("hq-apikey", k); } catch {} }
 
 // ── Browser Notifications ─────────────────────────────────────────────────────
 const reqNotif = async () => {
@@ -535,44 +537,60 @@ function TaskModal({ task: init, onSave, onClose }) {
   );
 }
 
+// ── Settings Modal ────────────────────────────────────────────────────────────
+function SettingsModal({ apiKey: initial, onSave, onClose }) {
+  const [key, setKey] = useState(initial);
+  return (
+    <div style={{ position:"fixed",inset:0,background:"rgba(28,28,28,0.45)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200 }}>
+      <div style={{ background:"white",borderRadius:16,padding:28,width:"100%",maxWidth:460,boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
+        <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20 }}>
+          <h2 style={{ fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:600 }}>Settings</h2>
+          <button onClick={onClose} style={{ background:"none",border:"none",fontSize:20,color:"#8B8278",cursor:"pointer" }}>✕</button>
+        </div>
+        <Field label="Anthropic API Key">
+          <input type="password" value={key} onChange={e=>setKey(e.target.value)}
+            placeholder="sk-ant-..." autoFocus style={iStyle} />
+        </Field>
+        <p style={{ fontSize:12,color:"#8B8278",marginTop:8,lineHeight:1.6 }}>
+          Get a free key at <b>console.anthropic.com</b> → API Keys.<br/>
+          It is stored only in your browser and never sent anywhere except Anthropic.
+        </p>
+        <div style={{ display:"flex",gap:10,marginTop:20 }}>
+          <button onClick={onClose} style={{ flex:1,padding:"11px",border:"1px solid #E2DAD0",borderRadius:8,background:"white",fontSize:14,color:"#5A5248",cursor:"pointer" }}>Cancel</button>
+          <button onClick={()=>onSave(key.trim())} disabled={!key.trim()}
+            style={{ flex:2,padding:"11px",border:"none",borderRadius:8,background:"#2A4A1E",fontSize:14,color:"white",fontWeight:500,cursor:"pointer",opacity:key.trim()?1:0.6 }}>
+            Save Key
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function App() {
-  const [tasks, setTasks]         = useState([]);
-  const [ver, setVer]             = useState(0);
-  const [view, setView]           = useState("dashboard");
-  const [user, setUser]           = useState("Bhargav");
-  const [showAdd, setShowAdd]     = useState(false);
-  const [editTask, setEditTask]   = useState(null);
+  const [tasks, setTasks]           = useState([]);
+  const [ver, setVer]               = useState(0);
+  const [view, setView]             = useState("dashboard");
+  const [user, setUser]             = useState("Bhargav");
+  const [showAdd, setShowAdd]       = useState(false);
+  const [editTask, setEditTask]     = useState(null);
   const [showNotifs, setShowNotifs] = useState(false);
-  const [aiLog, setAiLog]         = useState([]);
-  const [aiInput, setAiInput]     = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [syncMsg, setSyncMsg]     = useState("synced"); // synced | syncing | updated
+  const [showSettings, setShowSettings] = useState(false);
+  const [apiKey, setApiKey]         = useState("");
+  const [aiLog, setAiLog]           = useState([]);
+  const [aiInput, setAiInput]       = useState("");
+  const [aiLoading, setAiLoading]   = useState(false);
+  const [syncMsg, setSyncMsg]       = useState("synced");
 
   // Init
   useEffect(() => {
     loadData().then(({ tasks: t, ver: v }) => { setTasks(t); setVer(v); });
     loadUser().then(setUser);
+    setApiKey(loadApiKey());
     reqNotif();
   }, []);
 
-  // Live sync poll every 30s
-  useEffect(() => {
-    const id = setInterval(async () => {
-      try {
-        const r = await window.storage.get("hq-v5", true);
-        if (!r) return;
-        const p = JSON.parse(r.value);
-        if (p._v && p._v > ver) {
-          setTasks(p.tasks);
-          setVer(p._v);
-          setSyncMsg("updated");
-          setTimeout(()=>setSyncMsg("synced"), 3000);
-        }
-      } catch {}
-    }, 30000);
-    return () => clearInterval(id);
-  }, [ver]);
 
   const persist = async (newTasks) => {
     setTasks(newTasks);
@@ -618,13 +636,21 @@ export default function App() {
 
   const switchUser = async (u) => { setUser(u); await saveUser(u); };
 
+  const aiHeaders = () => ({
+    "Content-Type": "application/json",
+    "x-api-key": apiKey,
+    "anthropic-version": "2023-06-01",
+    "anthropic-dangerous-direct-browser-access": "true",
+  });
+
   // AI: Auto-schedule
   const autoSchedule = async () => {
+    if (!apiKey) { setShowSettings(true); return; }
     setAiLoading(true);
     const toSched = tasks.filter(t=>!t.done&&!t.recurrence);
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
+        method:"POST",headers:aiHeaders(),
         body:JSON.stringify({ model:"claude-sonnet-4-20250514",max_tokens:1000,
           messages:[{role:"user",content:
 `Schedule tasks for Bhargav & Rupa (couple with toddler), week ${WEEK[0]}–${WEEK[6]}.
@@ -647,12 +673,13 @@ Return ONLY JSON array: [{"id":"...","scheduledDate":"YYYY-MM-DD","scheduledTime
 
   // AI: Reprioritize overdue
   const autoReprioritize = async () => {
+    if (!apiKey) { setShowSettings(true); return; }
     setAiLoading(true);
     const overdue = tasks.filter(t=>!t.done&&t.dueDate&&t.dueDate<TODAY);
     if (!overdue.length) { setAiLog(l=>[...l,{role:"ai",text:"No overdue tasks — you're on top of it! 🎉"}]); setView("ai"); setAiLoading(false); return; }
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
+        method:"POST",headers:aiHeaders(),
         body:JSON.stringify({ model:"claude-sonnet-4-20250514",max_tokens:1000,
           messages:[{role:"user",content:
 `Reprioritize these overdue tasks for Bhargav & Rupa. Assign new priority (1=Critical–5=Someday) and reschedule this week.
@@ -676,10 +703,11 @@ Return ONLY JSON: [{"id":"...","priority":1,"scheduledDate":"YYYY-MM-DD","schedu
   const sendChat = async () => {
     const msg = aiInput.trim();
     if (!msg) return;
+    if (!apiKey) { setShowSettings(true); return; }
     setAiInput(""); setAiLog(l=>[...l,{role:"user",text:msg}]); setAiLoading(true);
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
+        method:"POST",headers:aiHeaders(),
         body:JSON.stringify({ model:"claude-sonnet-4-20250514",max_tokens:1000,
           messages:[{role:"user",content:
 `Manage tasks for Bhargav & Rupa (toddler family). Current tasks: ${JSON.stringify(tasks.map(t=>({id:t.id,title:t.title,category:t.category,priority:t.priority,assignee:t.assignee,done:t.done,scheduledDate:t.scheduledDate,recurrence:t.recurrence})))}
@@ -758,9 +786,12 @@ Return ONLY one of these JSON actions (no markdown):
               🔔 Alerts
               {alertCount>0&&<span style={{ background:"#E53E3E",color:"white",borderRadius:10,padding:"1px 6px",fontSize:11,fontWeight:700 }}>{alertCount}</span>}
             </button>
+            <button onClick={()=>setShowSettings(true)} style={{ width:"100%",padding:"9px",borderRadius:8,border:"1px solid rgba(255,255,255,0.18)",background:apiKey?"transparent":"rgba(214,158,46,0.25)",color:apiKey?"rgba(255,255,255,0.5)":"#FBD38D",cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",gap:6 }}>
+              ⚙ {apiKey?"Settings":"Set AI Key"}
+            </button>
             <div style={{ textAlign:"center",fontSize:11 }}>
               <span style={{ display:"inline-block",width:6,height:6,borderRadius:"50%",background:syncColors[syncMsg],marginRight:4,verticalAlign:"middle" }} />
-              <span style={{ opacity:0.35 }}>{syncMsg==="syncing"?"Saving…":syncMsg==="updated"?"Updated ↓":"Synced"}</span>
+              <span style={{ opacity:0.35 }}>{syncMsg==="syncing"?"Saving…":"Synced"}</span>
             </div>
             <div style={{ textAlign:"center",fontSize:11,opacity:0.28 }}>{tasks.filter(t=>t.done).length}/{tasks.length} done</div>
           </div>
@@ -785,6 +816,7 @@ Return ONLY one of these JSON actions (no markdown):
 
       {/* ── Modals ── */}
       {(showAdd||editTask)&&<TaskModal task={editTask} onSave={saveTask} onClose={()=>{setShowAdd(false);setEditTask(null);}} />}
+      {showSettings&&<SettingsModal apiKey={apiKey} onSave={k=>{setApiKey(k);saveApiKey(k);setShowSettings(false);}} onClose={()=>setShowSettings(false)} />}
     </>
   );
 }
