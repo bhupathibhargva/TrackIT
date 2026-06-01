@@ -577,11 +577,14 @@ export default function App() {
   const [editTask, setEditTask]     = useState(null);
   const [showNotifs, setShowNotifs] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
   const [apiKey, setApiKey]         = useState("");
   const [aiLog, setAiLog]           = useState([]);
   const [aiInput, setAiInput]       = useState("");
   const [aiLoading, setAiLoading]   = useState(false);
   const [syncMsg, setSyncMsg]       = useState("synced");
+
+  const isMobile = () => window.innerWidth < 768;
 
   // Init
   useEffect(() => {
@@ -741,8 +744,15 @@ Return ONLY one of these JSON actions (no markdown):
 
       <div style={{ display:"flex",minHeight:"100vh",background:"#F7F4EF",fontFamily:"'DM Sans',sans-serif" }}>
 
+        {/* ── Mobile sidebar backdrop ── */}
+        {sidebarOpen && isMobile() && (
+          <div onClick={()=>setSidebarOpen(false)} style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",zIndex:150 }} />
+        )}
+
         {/* ── Sidebar ── */}
-        <aside style={{ width:224,background:"#1E3612",color:"white",display:"flex",flexDirection:"column",flexShrink:0 }}>
+        <aside style={{ width:224,background:"#1E3612",color:"white",display:"flex",flexDirection:"column",flexShrink:0,
+          ...(isMobile() ? { position:"fixed",top:0,left:0,height:"100vh",zIndex:200,
+            transform:sidebarOpen?"translateX(0)":"translateX(-100%)",transition:"transform 0.25s ease" } : {}) }}>
           <div style={{ padding:"24px 20px 18px",borderBottom:"1px solid rgba(255,255,255,0.08)" }}>
             <div style={{ fontFamily:"'Cormorant Garamond',serif",fontSize:21,fontWeight:600,lineHeight:1.2 }}>Family HQ</div>
             <div style={{ fontSize:10,opacity:0.35,letterSpacing:"0.12em",textTransform:"uppercase",marginTop:2,marginBottom:14 }}>Life Planner</div>
@@ -759,7 +769,7 @@ Return ONLY one of these JSON actions (no markdown):
 
           <nav style={{ padding:"14px 0",flex:1 }}>
             {[["dashboard","◈","Dashboard"],["lists","≡","All Tasks"],["calendar","◻","Schedule"],["ai","✦","AI Assistant"]].map(([v,icon,label])=>(
-              <button key={v} onClick={()=>setView(v)} style={{ width:"100%",display:"flex",alignItems:"center",gap:10,padding:"11px 20px",
+              <button key={v} onClick={()=>{ setView(v); if(isMobile()) setSidebarOpen(false); }} style={{ width:"100%",display:"flex",alignItems:"center",gap:10,padding:"11px 20px",
                 background:view===v?"rgba(255,255,255,0.1)":"transparent",border:"none",
                 borderLeft:view===v?"2px solid #8DC76B":"2px solid transparent",
                 color:view===v?"white":"rgba(255,255,255,0.38)",fontSize:14,cursor:"pointer",transition:"all 0.15s",textAlign:"left" }}>
@@ -785,7 +795,10 @@ Return ONLY one of these JSON actions (no markdown):
         </aside>
 
         {/* ── Main ── */}
-        <main style={{ flex:1,overflow:"auto",padding:"32px 36px" }}>
+        <main style={{ flex:1,overflow:"auto",padding:isMobile()?"16px 16px 16px 16px":"32px 36px" }}>
+          {isMobile() && (
+            <button onClick={()=>setSidebarOpen(s=>!s)} style={{ marginBottom:16,background:"#1E3612",border:"none",borderRadius:8,color:"white",padding:"8px 12px",fontSize:18,cursor:"pointer",lineHeight:1 }}>☰</button>
+          )}
           {view==="dashboard"&&<Dashboard tasks={tasks} onToggle={toggleDone} onAdd={()=>setShowAdd(true)} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={setView} />}
           {view==="lists"    &&<ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={t=>setEditTask(t)} onAdd={()=>setShowAdd(true)} />}
           {view==="calendar" &&<CalView   tasks={tasks} onToggle={toggleDone} />}
