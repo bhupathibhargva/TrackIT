@@ -19,6 +19,7 @@ export default function App() {
   const [editTask, setEditTask]     = useState(null);
   const [showNotifs, setShowNotifs] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [mobile, setMobile]         = useState(() => window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen]   = useState(() => window.innerWidth >= 768);
   const [apiKey, setApiKey]         = useState("");
   const [aiLog, setAiLog]           = useState([]);
@@ -26,13 +27,18 @@ export default function App() {
   const [aiLoading, setAiLoading]   = useState(false);
   const [syncMsg, setSyncMsg]       = useState("synced");
 
-  const isMobile = () => window.innerWidth < 768;
-
   useEffect(() => {
     loadData().then(({ tasks: t }) => setTasks(t));
     loadUser().then(setUser);
     setApiKey(loadApiKey());
     reqNotif();
+  }, []);
+
+  // Keep mobile/desktop layout in sync across resize and rotation.
+  useEffect(() => {
+    const onResize = () => setMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   const persist = async (newTasks) => {
@@ -185,7 +191,7 @@ Return ONLY one of these JSON actions (no markdown):
 
       <div style={{ display:"flex", minHeight:"100vh", background:"#F7F4EF", fontFamily:"'DM Sans',sans-serif" }}>
 
-        {sidebarOpen && isMobile() && (
+        {sidebarOpen && mobile && (
           <div onClick={() => setSidebarOpen(false)}
             style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", zIndex:150 }} />
         )}
@@ -202,12 +208,12 @@ Return ONLY one of these JSON actions (no markdown):
           setShowNotifs={setShowNotifs}
           setShowSettings={setShowSettings}
           switchUser={switchUser}
-          isMobile={isMobile()}
+          isMobile={mobile}
           tasks={tasks}
         />
 
-        <main style={{ flex:1, overflow:"auto", padding:isMobile() ? "16px" : "32px 36px" }}>
-          {isMobile() && (
+        <main style={{ flex:1, overflow:"auto", padding:mobile ? "16px" : "32px 36px" }}>
+          {mobile && (
             <button onClick={() => setSidebarOpen(s => !s)}
               style={{ marginBottom:16, background:"#1E3612", border:"none", borderRadius:8, color:"white", padding:"8px 12px", fontSize:18, cursor:"pointer", lineHeight:1 }}>
               ☰

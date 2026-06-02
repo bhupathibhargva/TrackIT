@@ -3,15 +3,13 @@ import { SEED } from "./constants.js";
 export async function loadData() {
   try {
     const raw = localStorage.getItem("hq-v5");
-    if (raw) { const p = JSON.parse(raw); return { tasks: p.tasks || SEED, ver: p._v || 0 }; }
+    if (raw) { const p = JSON.parse(raw); return { tasks: p.tasks || SEED }; }
   } catch {}
-  return { tasks: SEED, ver: 0 };
+  return { tasks: SEED };
 }
 
 export async function persistData(tasks) {
-  const ver = Date.now();
-  try { localStorage.setItem("hq-v5", JSON.stringify({ tasks, _v: ver })); } catch {}
-  return ver;
+  try { localStorage.setItem("hq-v5", JSON.stringify({ tasks })); } catch {}
 }
 
 export async function loadUser() {

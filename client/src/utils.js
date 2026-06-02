@@ -17,13 +17,18 @@ export function expandRecurring(tasks, weekDates) {
   return out;
 }
 
+// Escape RFC 5545 special chars (\ , ; newline) so punctuation in titles/notes
+// can't corrupt the .ics output.
+const escICS = (s = "") =>
+  String(s).replace(/\\/g, "\\\\").replace(/[,;]/g, "\\$&").replace(/\r?\n/g, "\\n");
+
 export function exportICS(tasks) {
   const lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Family HQ//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
   for (const t of tasks.filter(t => t.scheduledDate && !t.done)) {
     const dt = t.scheduledDate.replace(/-/g,"") + (t.scheduledTime ? "T" + t.scheduledTime.replace(":","") + "00" : "");
     lines.push("BEGIN:VEVENT", `UID:${t.id}@familyhq`, `DTSTART:${dt}`,
-      `SUMMARY:${t.title} (${t.assignee})`, `CATEGORIES:${CATS[t.category]?.l || ""}`,
-      ...(t.notes ? [`DESCRIPTION:${t.notes}`] : []),
+      `SUMMARY:${escICS(t.title)} (${escICS(t.assignee)})`, `CATEGORIES:${escICS(CATS[t.category]?.l || "")}`,
+      ...(t.notes ? [`DESCRIPTION:${escICS(t.notes)}`] : []),
       ...(t.recurrence === "daily"  ? ["RRULE:FREQ=DAILY"]  : []),
       ...(t.recurrence === "weekly" ? ["RRULE:FREQ=WEEKLY"] : []),
       "END:VEVENT");

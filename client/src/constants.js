@@ -7,13 +7,18 @@ export const CATS = {
   workout: { l:"Workout",    e:"◎",  c:"#1A6868", b:"#E4F4F4" },
 };
 
-export const WEEK = Array.from({ length: 7 }, (_, i) => {
-  const d = new Date("2026-05-25"); d.setDate(25 + i); return d.toISOString().split("T")[0];
-});
+// Build dates from UTC primitives so parsing and ISO formatting agree —
+// otherwise behind-UTC timezones shift the whole week by a day. (month is 0-indexed)
+export const WEEK = Array.from({ length: 7 }, (_, i) =>
+  new Date(Date.UTC(2026, 4, 25 + i)).toISOString().split("T")[0]
+);
 
 export const DAY_NAMES = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 export const TODAY = WEEK[0];
-export function uid() { return Math.random().toString(36).slice(2, 9); }
+export function uid() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return Math.random().toString(36).slice(2, 9);
+}
 
 export const SEED = [
   { id:"s1",  title:"Pediatrician check-up",    category:"toddler", priority:1, assignee:"Both",    done:false, dueDate:"2026-05-27", scheduledDate:null,          scheduledTime:null,   duration:60,  notes:"Bring vaccination card", recurrence:null,     completedDates:[] },
