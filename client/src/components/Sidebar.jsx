@@ -1,6 +1,6 @@
 import {
   Drawer, List, ListItemButton, ListItemIcon, ListItemText,
-  Box, Typography, Divider, Badge, Stack, IconButton,
+  Box, Typography, Divider, Badge, Stack,
 } from '@mui/material';
 import DashboardOutlinedIcon      from '@mui/icons-material/DashboardOutlined';
 import FormatListBulletedIcon     from '@mui/icons-material/FormatListBulleted';
@@ -21,7 +21,7 @@ const NAV = [
 
 function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setSidebarOpen, setShowNotifs, setShowSettings, switchUser, isMobile, tasks }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#1E3612', color: 'white' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#27201A', color: 'white' }}>
       {/* Brand */}
       <Box sx={{ px: 2.5, pt: 3, pb: 2.25, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <Typography sx={{ fontSize: 20, fontWeight: 600, lineHeight: 1.2, color: 'white' }}>
@@ -64,7 +64,7 @@ function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setS
             sx={{
               py: 1.25, px: 2.5,
               borderLeft: '2px solid',
-              borderLeftColor: view === v ? '#8DC76B' : 'transparent',
+              borderLeftColor: view === v ? '#E8956A' : 'transparent',
               color: view === v ? 'white' : 'rgba(255,255,255,0.4)',
               '&:hover': { bgcolor: 'rgba(255,255,255,0.07)', color: 'white' },
               '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' } },
@@ -106,11 +106,11 @@ function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setS
           sx={{
             width: '100%', py: '9px', borderRadius: '8px',
             border: '1px solid rgba(255,255,255,0.18)',
-            bgcolor: apiKey ? 'transparent' : 'rgba(214,158,46,0.25)',
-            color: apiKey ? 'rgba(255,255,255,0.5)' : '#FBD38D',
+            bgcolor: apiKey ? 'transparent' : 'rgba(184,92,56,0.3)',
+            color: apiKey ? 'rgba(255,255,255,0.5)' : '#F5C4AE',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75,
             fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
-            '&:hover': { bgcolor: apiKey ? 'rgba(255,255,255,0.05)' : 'rgba(214,158,46,0.35)' },
+            '&:hover': { bgcolor: apiKey ? 'rgba(255,255,255,0.05)' : 'rgba(184,92,56,0.45)' },
           }}
         >
           <SettingsOutlinedIcon sx={{ fontSize: 16 }} />
@@ -119,7 +119,7 @@ function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setS
         <Box sx={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
           <FiberManualRecordIcon sx={{
             fontSize: 7,
-            color: syncMsg === 'syncing' ? '#D69E2E' : 'rgba(255,255,255,0.25)',
+            color: syncMsg === 'syncing' ? '#E8956A' : 'rgba(255,255,255,0.25)',
           }} />
           <Typography sx={{ fontSize: 11, opacity: 0.35, color: 'white' }}>
             {syncMsg === 'syncing' ? 'Saving…' : 'Synced'}

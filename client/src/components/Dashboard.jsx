@@ -22,18 +22,18 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3.5} flexWrap="wrap" gap={1.5}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'flex-start' }} mb={3.5} gap={1.5}>
         <Box>
-          <Typography sx={{ fontSize: 28, fontWeight: 600, color: '#1C1C1C', lineHeight: 1 }}>
+          <Typography sx={{ fontSize: 28, fontWeight: 600, color: '#25221F', lineHeight: 1 }}>
             Good morning
           </Typography>
-          <Typography sx={{ color: '#8B8278', mt: 0.75, fontSize: 14 }}>
+          <Typography sx={{ color: '#706A63', mt: 0.75, fontSize: 14 }}>
             Mon, 25 May 2026 · {tasks.filter(t => !t.done).length} tasks remaining
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end">
+        <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent={{ xs: 'flex-start', sm: 'flex-end' }}>
           <Button variant="outlined" onClick={onAdd} startIcon={<AddIcon />}
-            sx={{ borderColor: '#E2DAD0', color: '#2A4A1E', '&:hover': { borderColor: '#2A4A1E', bgcolor: '#EEF4EB' } }}>
+            sx={{ borderColor: '#E4DDD3', color: 'primary.main', '&:hover': { borderColor: 'primary.main', bgcolor: '#FAE8DE' } }}>
             Add
           </Button>
           <Button variant="outlined" onClick={onReprioritize} disabled={loading} startIcon={<AutorenewIcon />}
@@ -55,14 +55,14 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
         </Alert>
       )}
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1.75, mb: 2.75 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2,1fr)', sm: 'repeat(4,1fr)' }, gap: 1.75, mb: 2.75 }}>
         {stats.map(({ label, value }) => (
           <Card key={label}>
             <CardContent sx={{ p: '16px 18px !important' }}>
-              <Typography sx={{ fontSize: 11, color: '#8B8278', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 0.5 }}>
+              <Typography sx={{ fontSize: 11, color: '#706A63', textTransform: 'uppercase', letterSpacing: '0.08em', mb: 0.5 }}>
                 {label}
               </Typography>
-              <Typography sx={{ fontSize: 30, fontWeight: 700, color: '#1C1C1C', lineHeight: 1 }}>
+              <Typography sx={{ fontSize: 30, fontWeight: 700, color: '#25221F', lineHeight: 1 }}>
                 {value}
               </Typography>
             </CardContent>
@@ -70,17 +70,17 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
         ))}
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: 2.5 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1.15fr 0.85fr' }, gap: 2.5 }}>
         <Card>
           <CardContent>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.75}>
               <Typography sx={{ fontSize: 17, fontWeight: 600 }}>Today's Schedule</Typography>
-              <Button size="small" onClick={() => setView('calendar')} sx={{ fontSize: 12, color: '#2A4A1E' }}>
+              <Button size="small" onClick={() => setView('calendar')} sx={{ fontSize: 12, color: 'primary.main' }}>
                 Full week →
               </Button>
             </Stack>
             {todayAll.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 3.5, color: '#8B8278' }}>
+              <Box sx={{ textAlign: 'center', py: 3.5, color: '#706A63' }}>
                 <Typography sx={{ fontSize: 13, mb: 1.5 }}>Nothing scheduled for today.</Typography>
                 <Button variant="contained" size="small" onClick={onSchedule} disabled={loading}>
                   {loading ? 'Scheduling…' : 'Auto-Schedule Week'}
@@ -89,13 +89,13 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
             ) : (
               <Stack spacing={0.875}>
                 {todayAll.map(t => (
-                  <Box key={t.id} sx={{ display: 'flex', gap: 1.25, alignItems: 'center', px: 1.25, py: 1, bgcolor: '#F7F4EF', borderRadius: 2 }}>
-                    <Typography sx={{ fontSize: 11, color: '#8B8278', minWidth: 40, fontVariantNumeric: 'tabular-nums' }}>
+                  <Box key={t.id} sx={{ display: 'flex', gap: 1.25, alignItems: 'center', px: 1.25, py: 1, bgcolor: '#F5EFE8', borderRadius: 2 }}>
+                    <Typography sx={{ fontSize: 11, color: '#706A63', minWidth: 40, fontVariantNumeric: 'tabular-nums' }}>
                       {t.scheduledTime || '—'}
                     </Typography>
                     <Checkbox size="small" checked={!!t.done} onChange={() => onToggle(t.id)}
                       sx={{ p: 0, color: '#C8BFB0', '&.Mui-checked': { color: 'primary.main' } }} />
-                    <Typography sx={{ fontSize: 13, flex: 1, color: '#1C1C1C', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: t.done ? 'line-through' : 'none' }}>
+                    <Typography sx={{ fontSize: 13, flex: 1, color: '#25221F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: t.done ? 'line-through' : 'none' }}>
                       {t.isInst && '🔄 '}{t.title}
                     </Typography>
                     <Pill cat={t.category} small />
@@ -117,14 +117,14 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
                 return (
                   <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography sx={{ width: 20, fontSize: 13, textAlign: 'center' }}>{cat.e}</Typography>
-                    <Typography sx={{ fontSize: 13, color: '#3A3530', flex: 1 }}>{cat.l}</Typography>
+                    <Typography sx={{ fontSize: 13, color: '#3D302A', flex: 1 }}>{cat.l}</Typography>
                     <Box sx={{ width: 64 }}>
                       <LinearProgress variant="determinate" value={pct} sx={{
-                        height: 3, borderRadius: 2, bgcolor: '#EDE8E0',
+                        height: 3, borderRadius: 2, bgcolor: '#E4DDD3',
                         '& .MuiLinearProgress-bar': { bgcolor: cat.c },
                       }} />
                     </Box>
-                    <Typography sx={{ fontSize: 12, color: '#8B8278', minWidth: 18, textAlign: 'right' }}>{left}</Typography>
+                    <Typography sx={{ fontSize: 12, color: '#706A63', minWidth: 18, textAlign: 'right' }}>{left}</Typography>
                   </Box>
                 );
               })}

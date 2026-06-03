@@ -5,8 +5,8 @@ import { Pill } from './Pill.jsx';
 
 const STYLES = {
   error:   { titleColor: '#C53030', bg: '#FFF5F5', border: '#FED7D7' },
-  warning: { titleColor: '#C05621', bg: '#FFFAF0', border: '#FBD38D' },
-  success: { titleColor: '#2A6A4A', bg: '#F0FFF4', border: '#C6F6D5' },
+  warning: { titleColor: '#A04A28', bg: '#FFF8F3', border: '#FBBF9D' },
+  success: { titleColor: '#8B5E3C', bg: '#FBF5EF', border: '#E8C9AA' },
 };
 
 function Section({ label, items, type }) {
@@ -20,10 +20,10 @@ function Section({ label, items, type }) {
       <Stack spacing={0.75}>
         {items.map(t => (
           <Box key={t.id} sx={{ bgcolor: s.bg, border: `1px solid ${s.border}`, borderRadius: 2, p: '8px 10px' }}>
-            <Typography sx={{ fontSize: 13, color: '#1C1C1C', fontWeight: 500 }}>{t.title}</Typography>
+            <Typography sx={{ fontSize: 13, color: '#25221F', fontWeight: 500 }}>{t.title}</Typography>
             <Stack direction="row" spacing={0.75} mt={0.375} alignItems="center" flexWrap="wrap">
               <Pill cat={t.category} small />
-              <Typography sx={{ fontSize: 11, color: '#8B8278' }}>{t.assignee}</Typography>
+              <Typography sx={{ fontSize: 11, color: '#706A63' }}>{t.assignee}</Typography>
               {t.dueDate && <Typography sx={{ fontSize: 11, color: '#C05621' }}>Due {t.dueDate}</Typography>}
             </Stack>
           </Box>
@@ -49,7 +49,7 @@ export function NotifPanel({ tasks, onClose, open }) {
         <Section label="Today"     items={today}    type="warning" />
         <Section label="This Week" items={upcoming} type="success" />
         {overdue.length + today.length + upcoming.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 6, color: '#8B8278' }}>
+          <Box sx={{ textAlign: 'center', py: 6, color: '#706A63' }}>
             <Typography>All clear! ✓</Typography>
           </Box>
         )}

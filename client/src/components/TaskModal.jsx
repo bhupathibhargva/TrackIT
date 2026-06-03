@@ -120,7 +120,7 @@ export function TaskModal({ task: init, onSave, onClose }) {
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} variant="outlined" sx={{ borderColor: '#E2DAD0', color: '#5A5248' }}>
+        <Button onClick={onClose} variant="outlined" sx={{ borderColor: '#E4DDD3', color: '#5C4A3A' }}>
           Cancel
         </Button>
         <Button

@@ -16,10 +16,10 @@ export function AIView({ log, input, setInput, onSend, onSchedule, loading }) {
 
   return (
     <Box sx={{ maxWidth: 680 }}>
-      <Typography sx={{ fontSize: 28, fontWeight: 600, mb: 0.75, color: '#1C1C1C' }}>
+      <Typography sx={{ fontSize: 28, fontWeight: 600, mb: 0.75, color: '#25221F' }}>
         AI Assistant
       </Typography>
-      <Typography sx={{ color: '#8B8278', mb: 2.75, fontSize: 14 }}>
+      <Typography sx={{ color: '#706A63', mb: 2.75, fontSize: 14 }}>
         Natural language task management · smart scheduling · auto-reprioritization
       </Typography>
 
@@ -38,18 +38,18 @@ export function AIView({ log, input, setInput, onSend, onSchedule, loading }) {
       <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <Box sx={{ p: 2.5, minHeight: 280, maxHeight: 380, overflow: 'auto' }}>
           {log.length === 0 ? (
-            <Box sx={{ color: '#8B8278', textAlign: 'center', pt: 2.5 }}>
+            <Box sx={{ color: '#706A63', textAlign: 'center', pt: 2.5 }}>
               <AutoAwesomeIcon sx={{ fontSize: 30, mb: 1.25, opacity: 0.4 }} />
-              <Typography sx={{ fontSize: 18, fontWeight: 500, mb: 1.75, color: '#5A5248' }}>
+              <Typography sx={{ fontSize: 18, fontWeight: 500, mb: 1.75, color: '#5C4A3A' }}>
                 Ask me anything
               </Typography>
               <Stack spacing={0.75}>
                 {SUGGESTIONS.map((s, i) => (
                   <Button key={i} variant="outlined" size="small" onClick={() => setInput(s)} sx={{
-                    fontSize: 13, color: '#5A5248', textAlign: 'left',
-                    borderColor: '#EDE8E0', bgcolor: '#F7F4EF',
+                    fontSize: 13, color: '#5C4A3A', textAlign: 'left',
+                    borderColor: '#E4DDD3', bgcolor: '#F5EFE8',
                     textTransform: 'none', justifyContent: 'flex-start',
-                    '&:hover': { bgcolor: '#EDE8E0', borderColor: '#E2DAD0' },
+                    '&:hover': { bgcolor: '#EDE3D8', borderColor: '#E4DDD3' },
                   }}>
                     "{s}"
                   </Button>
@@ -62,15 +62,15 @@ export function AIView({ log, input, setInput, onSend, onSchedule, loading }) {
                 <Box key={i} sx={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   <Box sx={{
                     maxWidth: '80%', px: 1.75, py: 1.25, borderRadius: 2, lineHeight: 1.55, fontSize: 14,
-                    bgcolor: m.role === 'user' ? 'primary.main' : '#F7F4EF',
-                    color: m.role === 'user' ? 'white' : '#1C1C1C',
+                    bgcolor: m.role === 'user' ? 'primary.main' : '#F5EFE8',
+                    color: m.role === 'user' ? 'white' : '#25221F',
                   }}>
                     {m.text}
                   </Box>
                 </Box>
               ))}
               {loading && (
-                <Box sx={{ fontSize: 14, color: '#8B8278', px: 1.75, py: 1.25, bgcolor: '#F7F4EF', borderRadius: 2, maxWidth: '50%' }}>
+                <Box sx={{ fontSize: 14, color: '#706A63', px: 1.75, py: 1.25, bgcolor: '#F5EFE8', borderRadius: 2, maxWidth: '50%' }}>
                   Thinking…
                 </Box>
               )}

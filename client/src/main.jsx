@@ -6,11 +6,11 @@ import App from './App.jsx';
 
 const theme = createTheme({
   palette: {
-    primary:    { main: '#2A4A1E' },
-    secondary:  { main: '#8DC76B' },
-    background: { default: '#F5F3EF', paper: '#FFFFFF' },
+    primary:    { main: '#B85C38' },
+    secondary:  { main: '#E8956A' },
+    background: { default: '#F7F3ED', paper: '#FFFDF9' },
     error:      { main: '#C53030' },
-    divider:    '#EDE8E0',
+    divider:    '#E4DDD3',
   },
   typography: {
     fontFamily: '"DM Sans", "Helvetica Neue", Arial, sans-serif',
@@ -26,7 +26,7 @@ const theme = createTheme({
     },
     MuiCard: {
       defaultProps: { elevation: 0 },
-      styleOverrides: { root: { border: '1px solid #EDE8E0', borderRadius: 10 } },
+      styleOverrides: { root: { border: '1px solid #E4DDD3', borderRadius: 10 } },
     },
     MuiPaper: {
       defaultProps: { elevation: 0 },
@@ -43,7 +43,7 @@ const theme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: { borderRadius: 8, fontSize: 14 },
-        notchedOutline: { borderColor: '#E2DAD0' },
+        notchedOutline: { borderColor: '#E4DDD3' },
       },
     },
     MuiInputLabel: {

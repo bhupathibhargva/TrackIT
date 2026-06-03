@@ -44,7 +44,7 @@ export function SettingsModal({ apiKey: initial, onSave, onDelete, onClose }) {
             placeholder="AIza…"
             fullWidth size="small"
           />
-          <Typography sx={{ fontSize: 12, color: '#8B8278', lineHeight: 1.6 }}>
+          <Typography sx={{ fontSize: 12, color: '#706A63', lineHeight: 1.6 }}>
             Get a free key at <strong>aistudio.google.com</strong> → Get API Key.
             Stored only in your browser — never sent anywhere except Google.
           </Typography>
@@ -63,7 +63,7 @@ export function SettingsModal({ apiKey: initial, onSave, onDelete, onClose }) {
           </Button>
         )}
         {!hasKey && (
-          <Button onClick={onClose} variant="outlined" sx={{ borderColor: '#E2DAD0', color: '#5A5248' }}>
+          <Button onClick={onClose} variant="outlined" sx={{ borderColor: '#E4DDD3', color: '#5C4A3A' }}>
             Cancel
           </Button>
         )}

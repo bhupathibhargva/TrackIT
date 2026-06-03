@@ -186,14 +186,14 @@ Return ONLY one of these JSON actions (no markdown):
       <Sidebar
         user={user}
         view={view}
-        setView={setView}
+        setView={(v) => { setSidebarOpen(false); setView(v); }}
         apiKey={apiKey}
         alertCount={alertCount}
         syncMsg={syncMsg}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        setShowNotifs={setShowNotifs}
-        setShowSettings={setShowSettings}
+        setShowNotifs={() => { setSidebarOpen(false); setShowNotifs(true); }}
+        setShowSettings={() => { setSidebarOpen(false); setShowSettings(true); }}
         switchUser={switchUser}
         isMobile={mobile}
         tasks={tasks}
@@ -204,13 +204,13 @@ Return ONLY one of these JSON actions (no markdown):
           <Box
             component="button"
             onClick={() => setSidebarOpen(s => !s)}
-            sx={{ mb: 2, bgcolor: "#1E3612", border: "none", borderRadius: 2, color: "white", p: "8px 12px", fontSize: 18, cursor: "pointer", lineHeight: 1 }}
+            sx={{ mb: 2, bgcolor: "#27201A", border: "none", borderRadius: 2, color: "white", p: "8px 12px", fontSize: 18, cursor: "pointer", lineHeight: 1 }}
           >
             ☰
           </Box>
         )}
-        {view === "dashboard" && <Dashboard tasks={tasks} onToggle={toggleDone} onAdd={() => setShowAdd(true)} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={setView} />}
-        {view === "lists"     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={t => setEditTask(t)} onAdd={() => setShowAdd(true)} />}
+        {view === "dashboard" && <Dashboard tasks={tasks} onToggle={toggleDone} onAdd={() => { setSidebarOpen(false); setShowAdd(true); }} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={setView} />}
+        {view === "lists"     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={t => { setSidebarOpen(false); setEditTask(t); }} onAdd={() => { setSidebarOpen(false); setShowAdd(true); }} />}
         {view === "calendar"  && <CalView   tasks={tasks} onToggle={toggleDone} />}
         {view === "ai"        && <AIView    log={aiLog} input={aiInput} setInput={setAiInput} onSend={sendChat} onSchedule={autoSchedule} loading={aiLoading} />}
       </Box>

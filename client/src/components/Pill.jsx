@@ -30,7 +30,7 @@ export function Dot({ p }) {
 export function Field({ label, children }) {
   return (
     <Box>
-      <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8B8278', mb: 0.5, display: 'block' }}>
+      <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#706A63', mb: 0.5, display: 'block' }}>
         {label}
       </Typography>
       {children}
