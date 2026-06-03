@@ -22,7 +22,7 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
 
   return (
     <Box>
-      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'flex-start' }} mb={3.5} gap={1.5}>
+      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'flex-start' }} mb={3.5} gap={1.5}>
         <Box>
           <Typography sx={{ fontSize: 28, fontWeight: 600, color: '#25221F', lineHeight: 1 }}>
             Good morning
@@ -31,16 +31,17 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
             Mon, 25 May 2026 · {tasks.filter(t => !t.done).length} tasks remaining
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent={{ xs: 'flex-start', sm: 'flex-end' }}>
+        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
           <Button variant="outlined" onClick={onAdd} startIcon={<AddIcon />}
-            sx={{ borderColor: '#E4DDD3', color: 'primary.main', '&:hover': { borderColor: 'primary.main', bgcolor: '#FAE8DE' } }}>
+            sx={{ whiteSpace: 'nowrap', borderColor: '#E4DDD3', color: 'primary.main', '&:hover': { borderColor: 'primary.main', bgcolor: '#FAE8DE' } }}>
             Add
           </Button>
           <Button variant="outlined" onClick={onReprioritize} disabled={loading} startIcon={<AutorenewIcon />}
-            sx={{ borderColor: '#FAA', color: '#7B341E', '&:hover': { borderColor: '#F77', bgcolor: '#FFF8F5' } }}>
+            sx={{ whiteSpace: 'nowrap', borderColor: '#FAA', color: '#7B341E', '&:hover': { borderColor: '#F77', bgcolor: '#FFF8F5' } }}>
             Reprioritize
           </Button>
-          <Button variant="contained" onClick={onSchedule} disabled={loading} startIcon={<AutoAwesomeIcon />}>
+          <Button variant="contained" onClick={onSchedule} disabled={loading} startIcon={<AutoAwesomeIcon />}
+            sx={{ whiteSpace: 'nowrap' }}>
             {loading ? 'Thinking…' : 'Auto-Schedule'}
           </Button>
         </Stack>
