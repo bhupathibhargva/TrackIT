@@ -8,10 +8,10 @@ import { Pill } from './Pill.jsx';
 
 export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, loading, setView }) {
   const expanded = expandRecurring(tasks, WEEK);
-  const overdue  = tasks.filter(t => !t.done && t.dueDate && t.dueDate < TODAY);
-  const todayAll = expanded
-    .filter(t => t.scheduledDate === TODAY && !t.done)
-    .sort((a, b) => (a.scheduledTime || '').localeCompare(b.scheduledTime || ''));
+  const overdue  = tasks.filter(task => !task.done && task.dueDate && task.dueDate < TODAY);
+  const todayScheduled = expanded
+    .filter(task => task.scheduledDate === TODAY && !task.done)
+    .sort((a, b) => (a.scheduledTime ?? '').localeCompare(b.scheduledTime ?? ''));
 
   const stats = [
     { label: 'Total',         value: tasks.length },
@@ -80,7 +80,7 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
                 Full week →
               </Button>
             </Stack>
-            {todayAll.length === 0 ? (
+            {todayScheduled.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 3.5, color: '#706A63' }}>
                 <Typography sx={{ fontSize: 13, mb: 1.5 }}>Nothing scheduled for today.</Typography>
                 <Button variant="contained" size="small" onClick={onSchedule} disabled={loading}>
@@ -89,17 +89,17 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
               </Box>
             ) : (
               <Stack spacing={0.875}>
-                {todayAll.map(t => (
-                  <Box key={t.id} sx={{ display: 'flex', gap: 1.25, alignItems: 'center', px: 1.25, py: 1, bgcolor: '#F5EFE8', borderRadius: 2 }}>
+                {todayScheduled.map(task => (
+                  <Box key={task.id} sx={{ display: 'flex', gap: 1.25, alignItems: 'center', px: 1.25, py: 1, bgcolor: '#F5EFE8', borderRadius: 2 }}>
                     <Typography sx={{ fontSize: 11, color: '#706A63', minWidth: 40, fontVariantNumeric: 'tabular-nums' }}>
-                      {t.scheduledTime || '—'}
+                      {task.scheduledTime ?? '—'}
                     </Typography>
-                    <Checkbox size="small" checked={!!t.done} onChange={() => onToggle(t.id)}
+                    <Checkbox size="small" checked={!!task.done} onChange={() => onToggle(task.id)}
                       sx={{ p: 0, color: '#C8BFB0', '&.Mui-checked': { color: 'primary.main' } }} />
-                    <Typography sx={{ fontSize: 13, flex: 1, color: '#25221F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: t.done ? 'line-through' : 'none' }}>
-                      {t.isInst && '🔄 '}{t.title}
+                    <Typography sx={{ fontSize: 13, flex: 1, color: '#25221F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: task.done ? 'line-through' : 'none' }}>
+                      {task.isInst && '🔄 '}{task.title}
                     </Typography>
-                    <Pill cat={t.category} small />
+                    <Pill cat={task.category} small />
                   </Box>
                 ))}
               </Stack>
@@ -112,20 +112,22 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
             <Typography sx={{ fontSize: 17, fontWeight: 600, mb: 1.75 }}>By Category</Typography>
             <Stack spacing={1.375}>
               {Object.entries(CATS).map(([key, cat]) => {
-                const all  = tasks.filter(t => t.category === key);
-                const left = all.filter(t => !t.done).length;
-                const pct  = all.length ? Math.round((all.length - left) / all.length * 100) : 0;
+                const categoryTasks = tasks.filter(task => task.category === key);
+                const remaining     = categoryTasks.filter(task => !task.done).length;
+                const completionPct = categoryTasks.length
+                  ? Math.round((categoryTasks.length - remaining) / categoryTasks.length * 100)
+                  : 0;
                 return (
                   <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography sx={{ width: 20, fontSize: 13, textAlign: 'center' }}>{cat.e}</Typography>
                     <Typography sx={{ fontSize: 13, color: '#3D302A', flex: 1 }}>{cat.l}</Typography>
                     <Box sx={{ width: 64 }}>
-                      <LinearProgress variant="determinate" value={pct} sx={{
+                      <LinearProgress variant="determinate" value={completionPct} sx={{
                         height: 3, borderRadius: 2, bgcolor: '#E4DDD3',
                         '& .MuiLinearProgress-bar': { bgcolor: cat.c },
                       }} />
                     </Box>
-                    <Typography sx={{ fontSize: 12, color: '#706A63', minWidth: 18, textAlign: 'right' }}>{left}</Typography>
+                    <Typography sx={{ fontSize: 12, color: '#706A63', minWidth: 18, textAlign: 'right' }}>{remaining}</Typography>
                   </Box>
                 );
               })}

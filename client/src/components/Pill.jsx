@@ -2,15 +2,15 @@ import { Box, Typography } from '@mui/material';
 import { CATS } from '../constants.js';
 
 export function Pill({ cat, small }) {
-  const C = CATS[cat] || CATS.tasks;
+  const category = CATS[cat] ?? CATS.tasks;
   return (
     <Box component="span" sx={{
       display: 'inline-flex', alignItems: 'center', gap: 0.375,
-      bgcolor: C.b, color: C.c, borderRadius: '6px',
+      bgcolor: category.b, color: category.c, borderRadius: '6px',
       px: small ? 0.875 : 1.125, py: small ? '1px' : '2px',
       fontSize: small ? 10 : 11, fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
     }}>
-      {C.e} {C.l}
+      {category.e} {category.l}
     </Box>
   );
 }
@@ -18,11 +18,11 @@ export function Pill({ cat, small }) {
 const PRIORITY_COLORS = ['', '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#9AA0AA'];
 const PRIORITY_LABELS = ['', 'Critical', 'High', 'Medium', 'Low', 'Someday'];
 
-export function Dot({ p }) {
+export function Dot({ p: priority }) {
   return (
-    <Box title={PRIORITY_LABELS[p]} sx={{
+    <Box title={PRIORITY_LABELS[priority]} sx={{
       width: 8, height: 8, borderRadius: '50%',
-      bgcolor: PRIORITY_COLORS[p] || '#ccc', flexShrink: 0, display: 'inline-block',
+      bgcolor: PRIORITY_COLORS[priority] ?? '#ccc', flexShrink: 0, display: 'inline-block',
     }} />
   );
 }
@@ -37,5 +37,3 @@ export function Field({ label, children }) {
     </Box>
   );
 }
-
-export const iStyle = {};

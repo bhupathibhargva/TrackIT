@@ -1,231 +1,241 @@
-import { useState, useEffect } from "react";
-import { Box } from "@mui/material";
-import { CATS, WEEK, TODAY, uid } from "./constants.js";
-import { loadData, persistData, loadUser, saveUser, loadApiKey, saveApiKey } from "./storage.js";
-import { reqNotif, pushNotif } from "./utils.js";
-import { Sidebar }       from "./components/Sidebar.jsx";
-import { Dashboard }     from "./components/Dashboard.jsx";
-import { ListView }      from "./components/ListView.jsx";
-import { CalView }       from "./components/CalView.jsx";
-import { AIView }        from "./components/AIView.jsx";
-import { TaskModal }     from "./components/TaskModal.jsx";
-import { SettingsModal } from "./components/SettingsModal.jsx";
-import { NotifPanel }    from "./components/NotifPanel.jsx";
+import { useState, useEffect } from 'react';
+import { Box } from '@mui/material';
+import { CATS, WEEK, TODAY, uid, MOBILE_BREAKPOINT, RECURRING_SEPARATOR } from './constants.js';
+import { loadData, persistData, loadUser, saveUser, loadApiKey, saveApiKey } from './storage.js';
+import { reqNotif, pushNotif } from './utils.js';
+import { callGemini } from './gemini.js';
+import { schedulePrompt, reprioritizePrompt, chatPrompt } from './prompts.js';
+import { Sidebar }       from './components/Sidebar.jsx';
+import { Dashboard }     from './components/Dashboard.jsx';
+import { ListView }      from './components/ListView.jsx';
+import { CalView }       from './components/CalView.jsx';
+import { AIView }        from './components/AIView.jsx';
+import { TaskModal }     from './components/TaskModal.jsx';
+import { SettingsModal } from './components/SettingsModal.jsx';
+import { NotifPanel }    from './components/NotifPanel.jsx';
 
 export default function App() {
   const [tasks, setTasks]               = useState([]);
-  const [view, setView]                 = useState("dashboard");
-  const [user, setUser]                 = useState("Bhargav");
-  const [showAdd, setShowAdd]           = useState(false);
-  const [editTask, setEditTask]         = useState(null);
+  const [view, setView]                 = useState('dashboard');
+  const [activeUser, setActiveUser]     = useState('Bhargav');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingTask, setEditingTask]   = useState(null);
   const [showNotifs, setShowNotifs]     = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
-  const [mobile, setMobile]             = useState(() => window.innerWidth < 768);
-  const [apiKey, setApiKey]             = useState("");
+  const [isMobile, setIsMobile]         = useState(() => window.innerWidth < MOBILE_BREAKPOINT);
+  const [apiKey, setApiKey]             = useState('');
   const [aiLog, setAiLog]               = useState([]);
-  const [aiInput, setAiInput]           = useState("");
+  const [aiInput, setAiInput]           = useState('');
   const [aiLoading, setAiLoading]       = useState(false);
-  const [syncMsg, setSyncMsg]           = useState("synced");
+  const [syncMsg, setSyncMsg]           = useState('synced');
 
   useEffect(() => {
-    loadData().then(({ tasks: t }) => setTasks(t));
-    loadUser().then(setUser);
+    loadData().then(({ tasks: saved }) => setTasks(saved));
+    loadUser().then(setActiveUser);
     setApiKey(loadApiKey());
     reqNotif();
   }, []);
 
-  // Keep mobile/desktop layout in sync across resize and rotation.
   useEffect(() => {
-    const onResize = () => setMobile(window.innerWidth < 768);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    const onResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const persist = async (newTasks) => {
-    setTasks(newTasks);
-    setSyncMsg("syncing");
-    await persistData(newTasks);
-    setSyncMsg("synced");
+  const persist = async (updated) => {
+    setTasks(updated);
+    setSyncMsg('syncing');
+    await persistData(updated);
+    setSyncMsg('synced');
   };
 
   const toggleDone = (id) => {
-    if (id.includes("__")) {
-      const [tid, date] = id.split("__");
-      persist(tasks.map(t => {
-        if (t.id !== tid) return t;
-        const cd = t.completedDates || [];
-        return { ...t, completedDates: cd.includes(date) ? cd.filter(d => d !== date) : [...cd, date] };
+    if (id.includes(RECURRING_SEPARATOR)) {
+      const [taskId, date] = id.split(RECURRING_SEPARATOR);
+      persist(tasks.map(task => {
+        if (task.id !== taskId) return task;
+        const completed = task.completedDates ?? [];
+        const alreadyDone = completed.includes(date);
+        return {
+          ...task,
+          completedDates: alreadyDone
+            ? completed.filter(d => d !== date)
+            : [...completed, date],
+        };
       }));
     } else {
-      persist(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+      persist(tasks.map(task => task.id === id ? { ...task, done: !task.done } : task));
     }
   };
 
-  const deleteTask = id => persist(tasks.filter(t => t.id !== id));
+  const deleteTask = (id) => persist(tasks.filter(task => task.id !== id));
 
-  const saveTask = task => {
-    if (task.id && tasks.find(t => t.id === task.id)) persist(tasks.map(t => t.id === task.id ? task : t));
-    else persist([...tasks, { ...task, id: uid() }]);
-    setShowAdd(false);
-    setEditTask(null);
+  const saveTask = (task) => {
+    if (task.id && tasks.find(t => t.id === task.id)) {
+      persist(tasks.map(t => t.id === task.id ? task : t));
+    } else {
+      persist([...tasks, { ...task, id: uid() }]);
+    }
+    setShowAddModal(false);
+    setEditingTask(null);
   };
 
-  const movePriority = (id, dir) => {
+  const movePriority = (id, direction) => {
     const sorted = [...tasks].sort((a, b) => a.priority - b.priority || a.id.localeCompare(b.id));
-    const idx  = sorted.findIndex(t => t.id === id);
-    const swap = dir === "up" ? idx - 1 : idx + 1;
-    if (swap < 0 || swap >= sorted.length) return;
-    const [p1, p2] = [sorted[idx].priority, sorted[swap].priority];
-    persist(tasks.map(t => {
-      if (t.id === sorted[idx].id)  return { ...t, priority: p2 };
-      if (t.id === sorted[swap].id) return { ...t, priority: p1 };
-      return t;
+    const index = sorted.findIndex(task => task.id === id);
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= sorted.length) return;
+    const currentPriority = sorted[index].priority;
+    const swapPriority = sorted[swapIndex].priority;
+    persist(tasks.map(task => {
+      if (task.id === sorted[index].id)    return { ...task, priority: swapPriority };
+      if (task.id === sorted[swapIndex].id) return { ...task, priority: currentPriority };
+      return task;
     }));
   };
 
-  const switchUser = async (u) => { setUser(u); await saveUser(u); };
+  const switchUser = async (userName) => {
+    setActiveUser(userName);
+    await saveUser(userName);
+  };
 
-  // ── Gemini helpers ────────────────────────────────────────────────────────────
-  const geminiUrl  = () => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-  const geminiCall = (prompt) => fetch(geminiUrl(), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 1500 } }),
-  });
-  const geminiText = (data) => data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const openSettings = () => { setSidebarOpen(false); setShowSettings(true); };
+  const openNotifs   = () => { setSidebarOpen(false); setShowNotifs(true); };
+  const openAddModal = () => { setSidebarOpen(false); setShowAddModal(true); };
+  const openEditModal = (task) => { setSidebarOpen(false); setEditingTask(task); };
+  const navigateTo = (destination) => { setSidebarOpen(false); setView(destination); };
+
+  // ── AI actions ──────────────────────────────────────────────────────────────
+
+  const requireApiKey = () => {
+    if (!apiKey) { openSettings(); return false; }
+    return true;
+  };
+
+  const appendAiMessage = (text) => setAiLog(log => [...log, { role: 'ai', text }]);
 
   const autoSchedule = async () => {
-    if (!apiKey) { setShowSettings(true); return; }
+    if (!requireApiKey()) return;
     setAiLoading(true);
-    const toSched = tasks.filter(t => !t.done && !t.recurrence);
     try {
-      const res  = await geminiCall(
-`Schedule tasks for Bhargav & Rupa (couple with toddler), week ${WEEK[0]}–${WEEK[6]}.
-Tasks: ${JSON.stringify(toSched.map(t=>({id:t.id,title:t.title,category:t.category,priority:t.priority,assignee:t.assignee,duration:t.duration,dueDate:t.dueDate})))}
-Rules: Workouts 06:00–07:30 weekday mornings. Toddler 08:30–11:00. Work blocks Mon–Fri 09:00–18:00. Grocery Sat/Sun mornings or weekday evenings 19:30+. Date night Sat 19:30+. Family dinner Sun 17:00. P1→Mon-Tue, P2→Wed-Fri, P3+→weekend. Honour dueDate.
-Return ONLY JSON array: [{"id":"...","scheduledDate":"YYYY-MM-DD","scheduledTime":"HH:MM"}]`
-      );
-      const data  = await res.json();
-      const sched = JSON.parse((geminiText(data) || "[]").replace(/```json|```/g, "").trim());
-      const updated = tasks.map(t => { const s = sched.find(x => x.id === t.id); return s ? { ...t, scheduledDate: s.scheduledDate, scheduledTime: s.scheduledTime } : t; });
+      const schedulable = tasks.filter(task => !task.done && !task.recurrence);
+      const schedule = await callGemini(apiKey, schedulePrompt(schedulable));
+      const updated = tasks.map(task => {
+        const slot = schedule.find(s => s.id === task.id);
+        return slot ? { ...task, scheduledDate: slot.scheduledDate, scheduledTime: slot.scheduledTime } : task;
+      });
       await persist(updated);
-      pushNotif("Family HQ", "Week scheduled! " + sched.length + " tasks placed.");
-      setAiLog(l => [...l, { role: "ai", text: `Scheduled ${sched.length} tasks for the week!` }]);
-      setView("calendar");
-    } catch { setAiLog(l => [...l, { role: "ai", text: "Scheduling failed. Try again." }]); }
+      pushNotif('Family HQ', `Week scheduled! ${schedule.length} tasks placed.`);
+      appendAiMessage(`Scheduled ${schedule.length} tasks for the week!`);
+      setView('calendar');
+    } catch {
+      appendAiMessage('Scheduling failed. Try again.');
+    }
     setAiLoading(false);
   };
 
   const autoReprioritize = async () => {
-    if (!apiKey) { setShowSettings(true); return; }
+    if (!requireApiKey()) return;
     setAiLoading(true);
-    const overdue = tasks.filter(t => !t.done && t.dueDate && t.dueDate < TODAY);
+    const overdue = tasks.filter(task => !task.done && task.dueDate && task.dueDate < TODAY);
     if (!overdue.length) {
-      setAiLog(l => [...l, { role: "ai", text: "No overdue tasks — you're on top of it! 🎉" }]);
-      setView("ai");
+      appendAiMessage("No overdue tasks — you're on top of it! 🎉");
+      setView('ai');
       setAiLoading(false);
       return;
     }
     try {
-      const res  = await geminiCall(
-`Reprioritize these overdue tasks for Bhargav & Rupa. Assign new priority (1=Critical–5=Someday) and reschedule this week.
-Overdue: ${JSON.stringify(overdue.map(t=>({id:t.id,title:t.title,category:t.category,priority:t.priority,dueDate:t.dueDate,assignee:t.assignee})))}
-Week dates: ${WEEK.join(", ")}
-Return ONLY JSON: [{"id":"...","priority":1,"scheduledDate":"YYYY-MM-DD","scheduledTime":"HH:MM"}]`
-      );
-      const data    = await res.json();
-      const updates = JSON.parse((geminiText(data) || "[]").replace(/```json|```/g, "").trim());
-      const updated = tasks.map(t => { const u = updates.find(x => x.id === t.id); return u ? { ...t, ...u } : t; });
+      const updates = await callGemini(apiKey, reprioritizePrompt(overdue));
+      const updated = tasks.map(task => {
+        const change = updates.find(u => u.id === task.id);
+        return change ? { ...task, ...change } : task;
+      });
       await persist(updated);
-      setAiLog(l => [...l, { role: "ai", text: `Reprioritized and rescheduled ${updates.length} overdue tasks.` }]);
-      setView("ai");
-    } catch { setAiLog(l => [...l, { role: "ai", text: "Reprioritization failed." }]); }
+      appendAiMessage(`Reprioritized and rescheduled ${updates.length} overdue tasks.`);
+      setView('ai');
+    } catch {
+      appendAiMessage('Reprioritization failed.');
+    }
     setAiLoading(false);
   };
 
   const sendChat = async () => {
-    const msg = aiInput.trim();
-    if (!msg) return;
-    if (!apiKey) { setShowSettings(true); return; }
-    setAiInput(""); setAiLog(l => [...l, { role: "user", text: msg }]); setAiLoading(true);
+    const message = aiInput.trim();
+    if (!message || !requireApiKey()) return;
+    setAiInput('');
+    setAiLog(log => [...log, { role: 'user', text: message }]);
+    setAiLoading(true);
     try {
-      const res  = await geminiCall(
-`Manage tasks for Bhargav & Rupa (toddler family). Current tasks: ${JSON.stringify(tasks.map(t=>({id:t.id,title:t.title,category:t.category,priority:t.priority,assignee:t.assignee,done:t.done,scheduledDate:t.scheduledDate,recurrence:t.recurrence})))}
-User (${user}): "${msg}"
-Return ONLY one of these JSON actions (no markdown):
-{"action":"add","task":{"title":"...","category":"tasks|grocery|toddler|dinner|date|workout","priority":1-5,"assignee":"Bhargav|Rupa|Both","dueDate":"YYYY-MM-DD or null","duration":30,"notes":"","recurrence":"daily|weekly|null","done":false,"scheduledDate":null,"scheduledTime":null,"completedDates":[]}}
-{"action":"update","id":"...","changes":{...}}
-{"action":"delete","id":"..."}
-{"action":"chat","message":"..."}`
-      );
-      const data   = await res.json();
-      const result = JSON.parse((geminiText(data) || "{}").replace(/```json|```/g, "").trim());
-      if (result.action === "add") {
-        const nt = { ...result.task, id: uid() };
-        await persist([...tasks, nt]);
-        setAiLog(l => [...l, { role: "ai", text: `Added "${nt.title}" to ${CATS[nt.category]?.l || nt.category}.${nt.recurrence ? " Repeats " + nt.recurrence + "." : ""}` }]);
-      } else if (result.action === "update") {
-        await persist(tasks.map(t => t.id === result.id ? { ...t, ...result.changes } : t));
-        setAiLog(l => [...l, { role: "ai", text: `Updated "${tasks.find(t => t.id === result.id)?.title || "task"}".` }]);
-      } else if (result.action === "delete") {
-        const title = tasks.find(t => t.id === result.id)?.title;
-        await persist(tasks.filter(t => t.id !== result.id));
-        setAiLog(l => [...l, { role: "ai", text: `Removed "${title}".` }]);
+      const result = await callGemini(apiKey, chatPrompt(tasks, activeUser, message));
+      if (result.action === 'add') {
+        const newTask = { ...result.task, id: uid() };
+        await persist([...tasks, newTask]);
+        appendAiMessage(`Added "${newTask.title}" to ${CATS[newTask.category]?.l ?? newTask.category}.${newTask.recurrence ? ` Repeats ${newTask.recurrence}.` : ''}`);
+      } else if (result.action === 'update') {
+        await persist(tasks.map(task => task.id === result.id ? { ...task, ...result.changes } : task));
+        appendAiMessage(`Updated "${tasks.find(task => task.id === result.id)?.title ?? 'task'}".`);
+      } else if (result.action === 'delete') {
+        const title = tasks.find(task => task.id === result.id)?.title;
+        await persist(tasks.filter(task => task.id !== result.id));
+        appendAiMessage(`Removed "${title}".`);
       } else {
-        setAiLog(l => [...l, { role: "ai", text: result.message || "Done!" }]);
+        appendAiMessage(result.message ?? 'Done!');
       }
-    } catch { setAiLog(l => [...l, { role: "ai", text: "Something went wrong." }]); }
+    } catch {
+      appendAiMessage('Something went wrong.');
+    }
     setAiLoading(false);
   };
 
-  const alertCount = tasks.filter(t => !t.done && ((t.dueDate && t.dueDate <= TODAY) || t.scheduledDate === TODAY)).length;
+  const alertCount = tasks.filter(
+    task => !task.done && ((task.dueDate && task.dueDate <= TODAY) || task.scheduledDate === TODAY)
+  ).length;
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
       <Sidebar
-        user={user}
+        user={activeUser}
         view={view}
-        setView={(v) => { setSidebarOpen(false); setView(v); }}
+        setView={navigateTo}
         apiKey={apiKey}
         alertCount={alertCount}
         syncMsg={syncMsg}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        setShowNotifs={() => { setSidebarOpen(false); setShowNotifs(true); }}
-        setShowSettings={() => { setSidebarOpen(false); setShowSettings(true); }}
+        setShowNotifs={openNotifs}
+        setShowSettings={openSettings}
         switchUser={switchUser}
-        isMobile={mobile}
+        isMobile={isMobile}
         tasks={tasks}
       />
 
-      <Box component="main" sx={{ flex: 1, overflow: "auto", p: mobile ? 2 : "32px 36px" }}>
-        {mobile && (
+      <Box component="main" sx={{ flex: 1, overflow: 'auto', p: isMobile ? 2 : '32px 36px' }}>
+        {isMobile && (
           <Box
             component="button"
-            onClick={() => setSidebarOpen(s => !s)}
-            sx={{ mb: 2, bgcolor: "#27201A", border: "none", borderRadius: 2, color: "white", p: "8px 12px", fontSize: 18, cursor: "pointer", lineHeight: 1 }}
+            onClick={() => setSidebarOpen(open => !open)}
+            sx={{ mb: 2, bgcolor: '#27201A', border: 'none', borderRadius: 2, color: 'white', p: '8px 12px', fontSize: 18, cursor: 'pointer', lineHeight: 1 }}
           >
             ☰
           </Box>
         )}
-        {view === "dashboard" && <Dashboard tasks={tasks} onToggle={toggleDone} onAdd={() => { setSidebarOpen(false); setShowAdd(true); }} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={setView} />}
-        {view === "lists"     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={t => { setSidebarOpen(false); setEditTask(t); }} onAdd={() => { setSidebarOpen(false); setShowAdd(true); }} />}
-        {view === "calendar"  && <CalView   tasks={tasks} onToggle={toggleDone} />}
-        {view === "ai"        && <AIView    log={aiLog} input={aiInput} setInput={setAiInput} onSend={sendChat} onSchedule={autoSchedule} loading={aiLoading} />}
+        {view === 'dashboard' && <Dashboard tasks={tasks} onToggle={toggleDone} onAdd={openAddModal} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={navigateTo} />}
+        {view === 'lists'     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={openEditModal} onAdd={openAddModal} />}
+        {view === 'calendar'  && <CalView   tasks={tasks} onToggle={toggleDone} />}
+        {view === 'ai'        && <AIView    log={aiLog} input={aiInput} setInput={setAiInput} onSend={sendChat} onSchedule={autoSchedule} loading={aiLoading} />}
       </Box>
 
-      {/* NotifPanel as MUI Drawer — always mounted, open prop controls visibility */}
       <NotifPanel tasks={tasks} onClose={() => setShowNotifs(false)} open={showNotifs} />
 
-      {(showAdd || editTask) && (
-        <TaskModal task={editTask} onSave={saveTask} onClose={() => { setShowAdd(false); setEditTask(null); }} />
+      {(showAddModal || editingTask) && (
+        <TaskModal task={editingTask} onSave={saveTask} onClose={() => { setShowAddModal(false); setEditingTask(null); }} />
       )}
       {showSettings && (
         <SettingsModal
           apiKey={apiKey}
-          onSave={k => { setApiKey(k); saveApiKey(k); setShowSettings(false); }}
-          onDelete={() => { setApiKey(""); saveApiKey(""); setShowSettings(false); }}
+          onSave={key => { setApiKey(key); saveApiKey(key); setShowSettings(false); }}
+          onDelete={() => { setApiKey(''); saveApiKey(''); setShowSettings(false); }}
           onClose={() => setShowSettings(false)}
         />
       )}

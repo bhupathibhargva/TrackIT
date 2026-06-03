@@ -11,6 +11,7 @@ export function TaskRow({ task, onToggle, onDelete, onMove, onEdit }) {
 
   return (
     <Box
+      data-testid="task-row"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       sx={{
@@ -58,7 +59,7 @@ export function TaskRow({ task, onToggle, onDelete, onMove, onEdit }) {
             [() => onDelete(task.id),       <DeleteOutlineIcon fontSize="small" />, 'Delete',          true],
           ].map(([fn, icon, title, danger], i) => (
             <Tooltip key={i} title={title} arrow>
-              <IconButton size="small" onClick={fn} sx={{
+              <IconButton size="small" aria-label={title} onClick={fn} sx={{
                 border: '1px solid',
                 borderColor: danger ? '#FEB2B2' : '#E4DDD3',
                 borderRadius: 1.5,

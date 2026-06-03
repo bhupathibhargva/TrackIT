@@ -5,17 +5,17 @@ import { CATS } from '../constants.js';
 import { TaskRow } from './TaskRow.jsx';
 
 export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
-  const [catF, setCatF]         = useState('all');
-  const [who, setWho]           = useState('all');
-  const [showDone, setShowDone] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [assigneeFilter, setAssigneeFilter] = useState('all');
+  const [showCompleted, setShowCompleted]   = useState(false);
 
-  let vis = [...tasks];
-  if (catF !== 'all') vis = vis.filter(t => t.category === catF);
-  if (who !== 'all')  vis = vis.filter(t => t.assignee === who || t.assignee === 'Both');
-  if (!showDone)      vis = vis.filter(t => !t.done);
-  vis.sort((a, b) => a.priority - b.priority || a.title.localeCompare(b.title));
+  const categoryOptions = [['all', 'All'], ...Object.entries(CATS).map(([key, cat]) => [key, `${cat.e} ${cat.l}`])];
 
-  const catOpts = [['all', 'All'], ...Object.entries(CATS).map(([k, v]) => [k, v.e + ' ' + v.l])];
+  let filteredTasks = [...tasks];
+  if (categoryFilter !== 'all') filteredTasks = filteredTasks.filter(task => task.category === categoryFilter);
+  if (assigneeFilter !== 'all') filteredTasks = filteredTasks.filter(task => task.assignee === assigneeFilter || task.assignee === 'Both');
+  if (!showCompleted) filteredTasks = filteredTasks.filter(task => !task.done);
+  filteredTasks.sort((a, b) => a.priority - b.priority || a.title.localeCompare(b.title));
 
   return (
     <Box>
@@ -25,26 +25,26 @@ export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
       </Stack>
 
       <Stack direction="row" flexWrap="wrap" gap={1} mb={1} alignItems="center">
-        {catOpts.map(([k, l]) => (
+        {categoryOptions.map(([key, label]) => (
           <Chip
-            key={k}
-            label={l}
-            onClick={() => setCatF(k)}
-            variant={catF === k ? 'filled' : 'outlined'}
-            color={catF === k ? 'primary' : 'default'}
+            key={key}
+            label={label}
+            onClick={() => setCategoryFilter(key)}
+            variant={categoryFilter === key ? 'filled' : 'outlined'}
+            color={categoryFilter === key ? 'primary' : 'default'}
             size="small"
-            sx={{ fontWeight: catF === k ? 600 : 400, fontSize: 12 }}
+            sx={{ fontWeight: categoryFilter === key ? 600 : 400, fontSize: 12 }}
           />
         ))}
       </Stack>
       <Stack direction="row" spacing={0.75} mb={2.25}>
-        {['all', 'Bhargav', 'Rupa'].map(w => (
+        {[['all', 'Everyone'], ['Bhargav', 'Bhargav'], ['Rupa', 'Rupa']].map(([value, label]) => (
           <Chip
-            key={w}
-            label={w === 'all' ? 'Everyone' : w}
-            onClick={() => setWho(w)}
-            variant={who === w ? 'filled' : 'outlined'}
-            color={who === w ? 'primary' : 'default'}
+            key={value}
+            label={label}
+            onClick={() => setAssigneeFilter(value)}
+            variant={assigneeFilter === value ? 'filled' : 'outlined'}
+            color={assigneeFilter === value ? 'primary' : 'default'}
             size="small"
             sx={{ fontSize: 12 }}
           />
@@ -52,21 +52,23 @@ export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
       </Stack>
 
       <Stack spacing={0.75}>
-        {vis.map(t => (
-          <TaskRow key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} onMove={onMove} onEdit={onEdit} />
+        {filteredTasks.map(task => (
+          <TaskRow key={task.id} task={task} onToggle={onToggle} onDelete={onDelete} onMove={onMove} onEdit={onEdit} />
         ))}
-        {vis.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 6, color: '#8B8278' }}>
-            <Typography sx={{ color: '#706A63' }}>{tasks.filter(t => !t.done).length === 0 ? 'All done! 🎉' : 'No tasks match this filter.'}</Typography>
+        {filteredTasks.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 6, color: '#706A63' }}>
+            <Typography sx={{ color: '#706A63' }}>
+              {tasks.filter(t => !t.done).length === 0 ? 'All done! 🎉' : 'No tasks match this filter.'}
+            </Typography>
           </Box>
         )}
       </Stack>
 
       <Button
-        onClick={() => setShowDone(!showDone)}
+        onClick={() => setShowCompleted(showing => !showing)}
         sx={{ mt: 1.75, color: '#706A63', fontSize: 13, textDecoration: 'underline', textTransform: 'none' }}
       >
-        {showDone ? 'Hide' : 'Show'} completed ({tasks.filter(t => t.done).length})
+        {showCompleted ? 'Hide' : 'Show'} completed ({tasks.filter(t => t.done).length})
       </Button>
     </Box>
   );

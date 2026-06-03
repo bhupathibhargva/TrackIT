@@ -12,17 +12,18 @@ import FiberManualRecordIcon      from '@mui/icons-material/FiberManualRecord';
 
 const DRAWER_WIDTH = 232;
 
-const NAV = [
+const NAV_ITEMS = [
   { view: 'dashboard', icon: <DashboardOutlinedIcon />,     label: 'Dashboard'    },
   { view: 'lists',     icon: <FormatListBulletedIcon />,    label: 'All Tasks'    },
   { view: 'calendar',  icon: <CalendarMonthOutlinedIcon />, label: 'Schedule'     },
   { view: 'ai',        icon: <AutoAwesomeIcon />,           label: 'AI Assistant' },
 ];
 
+const ASSIGNEES = ['Bhargav', 'Rupa'];
+
 function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setSidebarOpen, setShowNotifs, setShowSettings, switchUser, isMobile, tasks }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#27201A', color: 'white' }}>
-      {/* Brand */}
       <Box sx={{ px: 2.5, pt: 3, pb: 2.25, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <Typography sx={{ fontSize: 20, fontWeight: 600, lineHeight: 1.2, color: 'white' }}>
           Family HQ
@@ -30,42 +31,40 @@ function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setS
         <Typography sx={{ fontSize: 10, opacity: 0.35, letterSpacing: '0.14em', textTransform: 'uppercase', mb: 1.75, color: 'white' }}>
           Life Planner
         </Typography>
-        {/* User switcher */}
         <Stack direction="row" spacing={0.75}>
-          {['Bhargav', 'Rupa'].map(u => (
+          {ASSIGNEES.map(name => (
             <Box
-              key={u}
+              key={name}
               component="button"
-              onClick={() => switchUser(u)}
+              onClick={() => switchUser(name)}
               sx={{
                 flex: 1, py: '7px', px: '4px', borderRadius: '7px',
                 border: '1px solid',
-                borderColor: user === u ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.15)',
-                bgcolor: user === u ? 'rgba(255,255,255,0.15)' : 'transparent',
-                color: user === u ? 'white' : 'rgba(255,255,255,0.38)',
+                borderColor: user === name ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.15)',
+                bgcolor: user === name ? 'rgba(255,255,255,0.15)' : 'transparent',
+                color: user === name ? 'white' : 'rgba(255,255,255,0.38)',
                 fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
                 cursor: 'pointer', transition: 'all 0.15s',
                 '&:hover': { borderColor: 'rgba(255,255,255,0.4)', color: 'rgba(255,255,255,0.8)' },
               }}
             >
-              {u[0]} {u}
+              {name[0]} {name}
             </Box>
           ))}
         </Stack>
       </Box>
 
-      {/* Nav */}
       <List sx={{ flex: 1, py: 1.5 }} disablePadding>
-        {NAV.map(({ view: v, icon, label }) => (
+        {NAV_ITEMS.map(({ view: navView, icon, label }) => (
           <ListItemButton
-            key={v}
-            selected={view === v}
-            onClick={() => { setView(v); if (isMobile) setSidebarOpen(false); }}
+            key={navView}
+            selected={view === navView}
+            onClick={() => { setView(navView); if (isMobile) setSidebarOpen(false); }}
             sx={{
               py: 1.25, px: 2.5,
               borderLeft: '2px solid',
-              borderLeftColor: view === v ? '#E8956A' : 'transparent',
-              color: view === v ? 'white' : 'rgba(255,255,255,0.4)',
+              borderLeftColor: view === navView ? '#E8956A' : 'transparent',
+              color: view === navView ? 'white' : 'rgba(255,255,255,0.4)',
               '&:hover': { bgcolor: 'rgba(255,255,255,0.07)', color: 'white' },
               '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' } },
               gap: 1.25,
@@ -74,18 +73,17 @@ function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setS
             <ListItemIcon sx={{ minWidth: 0, color: 'inherit', '& svg': { fontSize: 20 } }}>{icon}</ListItemIcon>
             <ListItemText
               primary={label}
-              primaryTypographyProps={{ fontSize: 14, fontWeight: view === v ? 500 : 400, color: 'inherit' }}
+              primaryTypographyProps={{ fontSize: 14, fontWeight: view === navView ? 500 : 400, color: 'inherit' }}
             />
           </ListItemButton>
         ))}
       </List>
 
-      {/* Footer */}
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
       <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 0.875 }}>
         <Box
           component="button"
-          onClick={() => setShowNotifs(v => !v)}
+          onClick={setShowNotifs}
           sx={{
             width: '100%', py: '9px', borderRadius: '8px',
             border: '1px solid rgba(255,255,255,0.18)',
@@ -102,7 +100,7 @@ function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setS
         </Box>
         <Box
           component="button"
-          onClick={() => setShowSettings(true)}
+          onClick={setShowSettings}
           sx={{
             width: '100%', py: '9px', borderRadius: '8px',
             border: '1px solid rgba(255,255,255,0.18)',

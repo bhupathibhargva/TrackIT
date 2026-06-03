@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { WEEK, TODAY, uid } from "./constants.js";
+import { WEEK, TODAY, uid, RECURRING_SEPARATOR } from "./constants.js";
 import { expandRecurring, exportICS } from "./utils.js";
 
 describe("WEEK", () => {
@@ -42,7 +42,8 @@ describe("expandRecurring", () => {
     );
     expect(out).toHaveLength(3);
     expect(out.map(t => t.scheduledDate)).toEqual(week);
-    // completedDates reflected onto the matching instance
+    // completedDates reflected onto the matching instance; id uses RECURRING_SEPARATOR
+    expect(out.every(t => t.id.includes(RECURRING_SEPARATOR))).toBe(true);
     expect(out.find(t => t.scheduledDate === "2026-05-26").done).toBe(true);
     expect(out.find(t => t.scheduledDate === "2026-05-25").done).toBe(false);
   });
