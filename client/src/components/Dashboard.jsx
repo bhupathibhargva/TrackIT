@@ -22,7 +22,7 @@ export function Dashboard({ tasks, onToggle, onAdd, onSchedule, onReprioritize, 
 
   return (
     <Box>
-      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'flex-start' }} mb={3.5} gap={1.5}>
+      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }} sx={{ mb: 5, gap: 2 }}>
         <Box>
           <Typography sx={{ fontSize: 28, fontWeight: 600, color: '#25221F', lineHeight: 1 }}>
             Good morning
