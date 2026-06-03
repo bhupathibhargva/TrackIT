@@ -1,48 +1,59 @@
-import { TODAY, WEEK } from "../constants.js";
-import { Pill } from "./Pill.jsx";
+import { Drawer, Box, Typography, IconButton, Stack } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { TODAY, WEEK } from '../constants.js';
+import { Pill } from './Pill.jsx';
 
-function Section({ title, color, items, itemColor, itemBorder }) {
+const STYLES = {
+  error:   { titleColor: '#C53030', bg: '#FFF5F5', border: '#FED7D7' },
+  warning: { titleColor: '#C05621', bg: '#FFFAF0', border: '#FBD38D' },
+  success: { titleColor: '#2A6A4A', bg: '#F0FFF4', border: '#C6F6D5' },
+};
+
+function Section({ label, items, type }) {
   if (items.length === 0) return null;
+  const s = STYLES[type];
   return (
-    <div style={{ marginBottom:20 }}>
-      <div style={{ fontSize:12, fontWeight:700, color, marginBottom:8, letterSpacing:"0.05em" }}>{title}</div>
-      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+    <Box mb={2.5}>
+      <Typography sx={{ fontSize: 12, fontWeight: 700, color: s.titleColor, mb: 1, letterSpacing: '0.05em' }}>
+        {label} ({items.length})
+      </Typography>
+      <Stack spacing={0.75}>
         {items.map(t => (
-          <div key={t.id} style={{ background:itemColor, border:`1px solid ${itemBorder}`, borderRadius:8, padding:"8px 10px" }}>
-            <div style={{ fontSize:13, color:"#1C1C1C", fontWeight:500 }}>{t.title}</div>
-            <div style={{ fontSize:11, color:"#8B8278", marginTop:3, display:"flex", alignItems:"center", gap:6 }}>
+          <Box key={t.id} sx={{ bgcolor: s.bg, border: `1px solid ${s.border}`, borderRadius: 2, p: '8px 10px' }}>
+            <Typography sx={{ fontSize: 13, color: '#1C1C1C', fontWeight: 500 }}>{t.title}</Typography>
+            <Stack direction="row" spacing={0.75} mt={0.375} alignItems="center" flexWrap="wrap">
               <Pill cat={t.category} small />
-              <span>{t.assignee}</span>
-              {t.dueDate && <span style={{ color:"#C05621" }}>Due {t.dueDate}</span>}
-            </div>
-          </div>
+              <Typography sx={{ fontSize: 11, color: '#8B8278' }}>{t.assignee}</Typography>
+              {t.dueDate && <Typography sx={{ fontSize: 11, color: '#C05621' }}>Due {t.dueDate}</Typography>}
+            </Stack>
+          </Box>
         ))}
-      </div>
-    </div>
+      </Stack>
+    </Box>
   );
 }
 
-export function NotifPanel({ tasks, onClose }) {
+export function NotifPanel({ tasks, onClose, open }) {
   const overdue  = tasks.filter(t => !t.done && t.dueDate && t.dueDate < TODAY);
   const today    = tasks.filter(t => !t.done && t.scheduledDate === TODAY && !t.recurrence);
   const upcoming = tasks.filter(t => !t.done && t.dueDate && t.dueDate > TODAY && t.dueDate <= WEEK[6]);
+
   return (
-    <div style={{ position:"fixed", top:0, right:0, width:320, height:"100vh", background:"white",
-      borderLeft:"1px solid #EDE8E0", zIndex:300, boxShadow:"-4px 0 24px rgba(0,0,0,0.1)",
-      display:"flex", flexDirection:"column" }}>
-      <div style={{ padding:"20px 20px 16px", borderBottom:"1px solid #EDE8E0",
-        display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600 }}>Alerts</h2>
-        <button onClick={onClose} style={{ background:"none", border:"none", fontSize:18, color:"#8B8278", cursor:"pointer" }}>✕</button>
-      </div>
-      <div style={{ flex:1, overflow:"auto", padding:16 }}>
-        <Section title={`⚠ Overdue (${overdue.length})`}   color="#C53030" items={overdue}  itemColor="#FFF5F5" itemBorder="#FED7D7" />
-        <Section title={`📅 Today (${today.length})`}       color="#C05621" items={today}    itemColor="#FFFAF0" itemBorder="#FBD38D" />
-        <Section title={`📆 This Week (${upcoming.length})`} color="#2A6A4A" items={upcoming} itemColor="#F0FFF4" itemBorder="#C6F6D5" />
+    <Drawer anchor="right" open={open} onClose={onClose} sx={{ '& .MuiDrawer-paper': { width: 320 } }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2.5, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Typography sx={{ fontSize: 17, fontWeight: 600 }}>Alerts</Typography>
+        <IconButton size="small" onClick={onClose}><CloseIcon /></IconButton>
+      </Box>
+      <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+        <Section label="Overdue"   items={overdue}  type="error"   />
+        <Section label="Today"     items={today}    type="warning" />
+        <Section label="This Week" items={upcoming} type="success" />
         {overdue.length + today.length + upcoming.length === 0 && (
-          <div style={{ textAlign:"center", padding:"40px 0", color:"#8B8278", fontSize:14 }}>All clear! ✓</div>
+          <Box sx={{ textAlign: 'center', py: 6, color: '#8B8278' }}>
+            <Typography>All clear! ✓</Typography>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Drawer>
   );
 }

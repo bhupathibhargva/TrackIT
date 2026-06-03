@@ -1,36 +1,41 @@
-import { CATS } from "../constants.js";
-
-export const iStyle = {
-  width:"100%", padding:"10px 12px", border:"1px solid #E2DAD0",
-  borderRadius:8, fontSize:14, outline:"none", background:"white",
-};
+import { Box, Typography } from '@mui/material';
+import { CATS } from '../constants.js';
 
 export function Pill({ cat, small }) {
   const C = CATS[cat] || CATS.tasks;
   return (
-    <span style={{ display:"inline-flex", alignItems:"center", gap:3, background:C.b, color:C.c,
-      borderRadius:20, padding:small?"2px 7px":"3px 9px", fontSize:small?10:11,
-      fontWeight:600, whiteSpace:"nowrap", flexShrink:0 }}>
+    <Box component="span" sx={{
+      display: 'inline-flex', alignItems: 'center', gap: 0.375,
+      bgcolor: C.b, color: C.c, borderRadius: '6px',
+      px: small ? 0.875 : 1.125, py: small ? '1px' : '2px',
+      fontSize: small ? 10 : 11, fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
+    }}>
       {C.e} {C.l}
-    </span>
+    </Box>
   );
 }
 
+const PRIORITY_COLORS = ['', '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#9AA0AA'];
+const PRIORITY_LABELS = ['', 'Critical', 'High', 'Medium', 'Low', 'Someday'];
+
 export function Dot({ p }) {
-  const cols = ["","#E53E3E","#DD6B20","#D69E2E","#38A169","#9AA0AA"];
-  const labs = ["","Critical","High","Medium","Low","Someday"];
-  return <span title={labs[p]} style={{ width:8, height:8, borderRadius:"50%",
-    background:cols[p]||"#ccc", flexShrink:0, display:"inline-block" }} />;
+  return (
+    <Box title={PRIORITY_LABELS[p]} sx={{
+      width: 8, height: 8, borderRadius: '50%',
+      bgcolor: PRIORITY_COLORS[p] || '#ccc', flexShrink: 0, display: 'inline-block',
+    }} />
+  );
 }
 
 export function Field({ label, children }) {
   return (
-    <div>
-      <label style={{ fontSize:11, fontWeight:700, textTransform:"uppercase",
-        letterSpacing:"0.08em", color:"#8B8278", display:"block", marginBottom:4 }}>
+    <Box>
+      <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8B8278', mb: 0.5, display: 'block' }}>
         {label}
-      </label>
+      </Typography>
       {children}
-    </div>
+    </Box>
   );
 }
+
+export const iStyle = {};

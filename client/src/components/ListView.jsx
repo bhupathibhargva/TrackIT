@@ -1,60 +1,73 @@
-import { useState } from "react";
-import { CATS } from "../constants.js";
-import { TaskRow } from "./TaskRow.jsx";
+import { useState } from 'react';
+import { Box, Typography, Button, Stack, Chip } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { CATS } from '../constants.js';
+import { TaskRow } from './TaskRow.jsx';
 
 export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
-  const [catF, setCatF]       = useState("all");
-  const [who, setWho]         = useState("all");
+  const [catF, setCatF]         = useState('all');
+  const [who, setWho]           = useState('all');
   const [showDone, setShowDone] = useState(false);
 
-  const catOpts = [["all","All"], ...Object.entries(CATS).map(([k,v]) => [k, v.e+" "+v.l])];
   let vis = [...tasks];
-  if (catF !== "all") vis = vis.filter(t => t.category === catF);
-  if (who !== "all")  vis = vis.filter(t => t.assignee === who || t.assignee === "Both");
+  if (catF !== 'all') vis = vis.filter(t => t.category === catF);
+  if (who !== 'all')  vis = vis.filter(t => t.assignee === who || t.assignee === 'Both');
   if (!showDone)      vis = vis.filter(t => !t.done);
-  vis.sort((a,b) => a.priority - b.priority || a.title.localeCompare(b.title));
+  vis.sort((a, b) => a.priority - b.priority || a.title.localeCompare(b.title));
+
+  const catOpts = [['all', 'All'], ...Object.entries(CATS).map(([k, v]) => [k, v.e + ' ' + v.l])];
 
   return (
-    <div>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}>
-        <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:34, fontWeight:600, color:"#1C1C1C" }}>All Tasks</h1>
-        <button onClick={onAdd} style={{ padding:"10px 18px", background:"#2A4A1E", border:"none", borderRadius:8, fontSize:14, color:"white", fontWeight:500, cursor:"pointer" }}>+ Add Task</button>
-      </div>
+    <Box>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2.75}>
+        <Typography sx={{ fontSize: 28, fontWeight: 600, color: '#1C1C1C' }}>All Tasks</Typography>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={onAdd}>Add Task</Button>
+      </Stack>
 
-      <div style={{ display:"flex", gap:8, marginBottom:18, flexWrap:"wrap", alignItems:"center" }}>
-        {catOpts.map(([k,l]) => (
-          <button key={k} onClick={() => setCatF(k)}
-            style={{ padding:"5px 13px", borderRadius:20, border:"1px solid", cursor:"pointer", fontSize:13, fontWeight:500,
-              borderColor:catF===k?"#2A4A1E":"#E2DAD0", background:catF===k?"#2A4A1E":"white", color:catF===k?"white":"#5A5248" }}>
-            {l}
-          </button>
+      <Stack direction="row" flexWrap="wrap" gap={1} mb={2.25} alignItems="center">
+        {catOpts.map(([k, l]) => (
+          <Chip
+            key={k}
+            label={l}
+            onClick={() => setCatF(k)}
+            variant={catF === k ? 'filled' : 'outlined'}
+            color={catF === k ? 'primary' : 'default'}
+            size="small"
+            sx={{ fontWeight: catF === k ? 600 : 400, fontSize: 12 }}
+          />
         ))}
-        <div style={{ marginLeft:"auto", display:"flex", gap:6 }}>
-          {["all","Bhargav","Rupa"].map(w => (
-            <button key={w} onClick={() => setWho(w)}
-              style={{ padding:"5px 11px", borderRadius:20, border:"1px solid", cursor:"pointer", fontSize:12,
-                borderColor:who===w?"#2A4A1E":"#E2DAD0", background:who===w?"#EEF4EB":"white", color:who===w?"#2A4A1E":"#5A5248" }}>
-              {w==="all" ? "Everyone" : w}
-            </button>
+        <Stack direction="row" spacing={0.75} sx={{ ml: 'auto' }}>
+          {['all', 'Bhargav', 'Rupa'].map(w => (
+            <Chip
+              key={w}
+              label={w === 'all' ? 'Everyone' : w}
+              onClick={() => setWho(w)}
+              variant={who === w ? 'filled' : 'outlined'}
+              color={who === w ? 'primary' : 'default'}
+              size="small"
+              sx={{ fontSize: 12 }}
+            />
           ))}
-        </div>
-      </div>
+        </Stack>
+      </Stack>
 
-      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+      <Stack spacing={0.75}>
         {vis.map(t => (
           <TaskRow key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} onMove={onMove} onEdit={onEdit} />
         ))}
         {vis.length === 0 && (
-          <div style={{ textAlign:"center", padding:40, color:"#8B8278", fontSize:14 }}>
-            {tasks.filter(t => !t.done).length === 0 ? "All done! 🎉" : "No tasks match this filter."}
-          </div>
+          <Box sx={{ textAlign: 'center', py: 6, color: '#8B8278' }}>
+            <Typography>{tasks.filter(t => !t.done).length === 0 ? 'All done! 🎉' : 'No tasks match this filter.'}</Typography>
+          </Box>
         )}
-      </div>
+      </Stack>
 
-      <button onClick={() => setShowDone(!showDone)}
-        style={{ marginTop:14, background:"none", border:"none", color:"#8B8278", fontSize:13, cursor:"pointer", textDecoration:"underline" }}>
-        {showDone ? "Hide" : "Show"} completed ({tasks.filter(t => t.done).length})
-      </button>
-    </div>
+      <Button
+        onClick={() => setShowDone(!showDone)}
+        sx={{ mt: 1.75, color: '#8B8278', fontSize: 13, textDecoration: 'underline', textTransform: 'none' }}
+      >
+        {showDone ? 'Hide' : 'Show'} completed ({tasks.filter(t => t.done).length})
+      </Button>
+    </Box>
   );
 }

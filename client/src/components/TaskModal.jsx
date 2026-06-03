@@ -1,10 +1,16 @@
-import { useState } from "react";
-import { CATS, WEEK } from "../constants.js";
-import { Field, iStyle } from "./Pill.jsx";
+import { useState } from 'react';
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Select, MenuItem, FormControl, InputLabel,
+  Button, Box, IconButton, Stack,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { CATS, WEEK } from '../constants.js';
 
 const BLANK = {
-  title:"", category:"tasks", priority:3, assignee:"Both", dueDate:"", duration:30,
-  notes:"", done:false, scheduledDate:null, scheduledTime:null, recurrence:null, completedDates:[],
+  title: '', category: 'tasks', priority: 3, assignee: 'Both', dueDate: '',
+  duration: 30, notes: '', done: false, scheduledDate: null, scheduledTime: null,
+  recurrence: null, completedDates: [],
 };
 
 export function TaskModal({ task: init, onSave, onClose }) {
@@ -12,93 +18,119 @@ export function TaskModal({ task: init, onSave, onClose }) {
   const f = (k, v) => setForm(x => ({ ...x, [k]: v }));
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(28,28,28,0.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200 }}>
-      <div style={{ background:"white", borderRadius:16, padding:28, width:"100%", maxWidth:500, maxHeight:"92vh", overflow:"auto", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-          <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:600 }}>{init ? "Edit Task" : "New Task"}</h2>
-          <button onClick={onClose} style={{ background:"none", border:"none", fontSize:20, color:"#8B8278", cursor:"pointer" }}>✕</button>
-        </div>
+    <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+        {init ? 'Edit Task' : 'New Task'}
+        <IconButton size="small" onClick={onClose} edge="end"><CloseIcon fontSize="small" /></IconButton>
+      </DialogTitle>
 
-        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-          <Field label="Title">
-            <input value={form.title} onChange={e => f("title", e.target.value)}
-              placeholder="What needs to be done?" autoFocus style={iStyle} />
-          </Field>
+      <DialogContent dividers>
+        <Stack spacing={2} pt={0.5}>
+          <TextField
+            label="Title"
+            value={form.title}
+            onChange={e => f('title', e.target.value)}
+            placeholder="What needs to be done?"
+            autoFocus fullWidth size="small"
+          />
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            <Field label="Category">
-              <select value={form.category} onChange={e => f("category", e.target.value)} style={iStyle}>
-                {Object.entries(CATS).map(([k,v]) => <option key={k} value={k}>{v.e} {v.l}</option>)}
-              </select>
-            </Field>
-            <Field label="Assignee">
-              <select value={form.assignee} onChange={e => f("assignee", e.target.value)} style={iStyle}>
-                {["Bhargav","Rupa","Both"].map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </Field>
-          </div>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Category</InputLabel>
+              <Select label="Category" value={form.category} onChange={e => f('category', e.target.value)}>
+                {Object.entries(CATS).map(([k, v]) => <MenuItem key={k} value={k}>{v.e} {v.l}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth size="small">
+              <InputLabel>Assignee</InputLabel>
+              <Select label="Assignee" value={form.assignee} onChange={e => f('assignee', e.target.value)}>
+                {['Bhargav', 'Rupa', 'Both'].map(a => <MenuItem key={a} value={a}>{a}</MenuItem>)}
+              </Select>
+            </FormControl>
+          </Box>
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            <Field label="Priority">
-              <select value={form.priority} onChange={e => f("priority", +e.target.value)} style={iStyle}>
-                {[[1,"Critical"],[2,"High"],[3,"Medium"],[4,"Low"],[5,"Someday"]].map(([p,l]) => (
-                  <option key={p} value={p}>{p} — {l}</option>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Priority</InputLabel>
+              <Select label="Priority" value={form.priority} onChange={e => f('priority', +e.target.value)}>
+                {[[1,'Critical'],[2,'High'],[3,'Medium'],[4,'Low'],[5,'Someday']].map(([p,l]) => (
+                  <MenuItem key={p} value={p}>{p} — {l}</MenuItem>
                 ))}
-              </select>
-            </Field>
-            <Field label="Repeats">
-              <select value={form.recurrence||""} onChange={e => f("recurrence", e.target.value||null)} style={iStyle}>
-                <option value="">One-time</option>
-                <option value="daily">🔄 Daily</option>
-                <option value="weekly">🔄 Weekly</option>
-              </select>
-            </Field>
-          </div>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth size="small">
+              <InputLabel>Repeats</InputLabel>
+              <Select label="Repeats" value={form.recurrence || ''} onChange={e => f('recurrence', e.target.value || null)}>
+                <MenuItem value="">One-time</MenuItem>
+                <MenuItem value="daily">🔄 Daily</MenuItem>
+                <MenuItem value="weekly">🔄 Weekly</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            <Field label="Due Date">
-              <input type="date" value={form.dueDate||""} onChange={e => f("dueDate", e.target.value)} style={iStyle} />
-            </Field>
-            <Field label="Duration (mins)">
-              <input type="number" value={form.duration} onChange={e => f("duration", +e.target.value)} min={5} step={5} style={iStyle} />
-            </Field>
-          </div>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+            <TextField
+              label="Due Date" type="date"
+              value={form.dueDate || ''}
+              onChange={e => f('dueDate', e.target.value)}
+              fullWidth size="small"
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Duration (mins)" type="number"
+              value={form.duration}
+              onChange={e => f('duration', +e.target.value)}
+              inputProps={{ min: 5, step: 5 }}
+              fullWidth size="small"
+            />
+          </Box>
 
           {form.recurrence && (
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-              <Field label="Time">
-                <input type="time" value={form.scheduledTime||""} onChange={e => f("scheduledTime", e.target.value)} style={iStyle} />
-              </Field>
-              {form.recurrence === "weekly" && (
-                <Field label="Day of Week">
-                  <select value={form.scheduledDate||WEEK[0]} onChange={e => f("scheduledDate", e.target.value)} style={iStyle}>
-                    {WEEK.map((d,i) => (
-                      <option key={d} value={d}>{["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][i]}</option>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+              <TextField
+                label="Time" type="time"
+                value={form.scheduledTime || ''}
+                onChange={e => f('scheduledTime', e.target.value)}
+                fullWidth size="small"
+                InputLabelProps={{ shrink: true }}
+              />
+              {form.recurrence === 'weekly' && (
+                <FormControl fullWidth size="small">
+                  <InputLabel>Day of Week</InputLabel>
+                  <Select label="Day of Week" value={form.scheduledDate || WEEK[0]} onChange={e => f('scheduledDate', e.target.value)}>
+                    {WEEK.map((d, i) => (
+                      <MenuItem key={d} value={d}>
+                        {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][i]}
+                      </MenuItem>
                     ))}
-                  </select>
-                </Field>
+                  </Select>
+                </FormControl>
               )}
-            </div>
+            </Box>
           )}
 
-          <Field label="Notes">
-            <textarea value={form.notes} onChange={e => f("notes", e.target.value)} rows={2}
-              style={{ ...iStyle, resize:"none" }} />
-          </Field>
-        </div>
+          <TextField
+            label="Notes"
+            value={form.notes}
+            onChange={e => f('notes', e.target.value)}
+            multiline rows={2}
+            fullWidth size="small"
+          />
+        </Stack>
+      </DialogContent>
 
-        <div style={{ display:"flex", gap:10, marginTop:20 }}>
-          <button onClick={onClose}
-            style={{ flex:1, padding:"11px", border:"1px solid #E2DAD0", borderRadius:8, background:"white", fontSize:14, color:"#5A5248", cursor:"pointer" }}>
-            Cancel
-          </button>
-          <button onClick={() => { if (form.title.trim()) onSave({ ...form, completedDates: form.completedDates||[] }); }}
-            disabled={!form.title.trim()}
-            style={{ flex:2, padding:"11px", border:"none", borderRadius:8, background:"#2A4A1E", fontSize:14, color:"white", fontWeight:500, cursor:"pointer", opacity:form.title.trim()?1:0.6 }}>
-            {init ? "Save Changes" : "Add Task"}
-          </button>
-        </div>
-      </div>
-    </div>
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} variant="outlined" sx={{ borderColor: '#E2DAD0', color: '#5A5248' }}>
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          disabled={!form.title.trim()}
+          onClick={() => { if (form.title.trim()) onSave({ ...form, completedDates: form.completedDates || [] }); }}
+        >
+          {init ? 'Save Changes' : 'Add Task'}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

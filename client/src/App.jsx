@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Box } from "@mui/material";
 import { CATS, WEEK, TODAY, uid } from "./constants.js";
 import { loadData, persistData, loadUser, saveUser, loadApiKey, saveApiKey } from "./storage.js";
 import { reqNotif, pushNotif } from "./utils.js";
@@ -12,20 +13,20 @@ import { SettingsModal } from "./components/SettingsModal.jsx";
 import { NotifPanel }    from "./components/NotifPanel.jsx";
 
 export default function App() {
-  const [tasks, setTasks]           = useState([]);
-  const [view, setView]             = useState("dashboard");
-  const [user, setUser]             = useState("Bhargav");
-  const [showAdd, setShowAdd]       = useState(false);
-  const [editTask, setEditTask]     = useState(null);
-  const [showNotifs, setShowNotifs] = useState(false);
+  const [tasks, setTasks]               = useState([]);
+  const [view, setView]                 = useState("dashboard");
+  const [user, setUser]                 = useState("Bhargav");
+  const [showAdd, setShowAdd]           = useState(false);
+  const [editTask, setEditTask]         = useState(null);
+  const [showNotifs, setShowNotifs]     = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [mobile, setMobile]         = useState(() => window.innerWidth < 768);
-  const [sidebarOpen, setSidebarOpen]   = useState(() => window.innerWidth >= 768);
-  const [apiKey, setApiKey]         = useState("");
-  const [aiLog, setAiLog]           = useState([]);
-  const [aiInput, setAiInput]       = useState("");
-  const [aiLoading, setAiLoading]   = useState(false);
-  const [syncMsg, setSyncMsg]       = useState("synced");
+  const [sidebarOpen, setSidebarOpen]   = useState(false);
+  const [mobile, setMobile]             = useState(() => window.innerWidth < 768);
+  const [apiKey, setApiKey]             = useState("");
+  const [aiLog, setAiLog]               = useState([]);
+  const [aiInput, setAiInput]           = useState("");
+  const [aiLoading, setAiLoading]       = useState(false);
+  const [syncMsg, setSyncMsg]           = useState("synced");
 
   useEffect(() => {
     loadData().then(({ tasks: t }) => setTasks(t));
@@ -71,7 +72,7 @@ export default function App() {
   };
 
   const movePriority = (id, dir) => {
-    const sorted = [...tasks].sort((a,b) => a.priority - b.priority || a.id.localeCompare(b.id));
+    const sorted = [...tasks].sort((a, b) => a.priority - b.priority || a.id.localeCompare(b.id));
     const idx  = sorted.findIndex(t => t.id === id);
     const swap = dir === "up" ? idx - 1 : idx + 1;
     if (swap < 0 || swap >= sorted.length) return;
@@ -105,14 +106,14 @@ Tasks: ${JSON.stringify(toSched.map(t=>({id:t.id,title:t.title,category:t.catego
 Rules: Workouts 06:00–07:30 weekday mornings. Toddler 08:30–11:00. Work blocks Mon–Fri 09:00–18:00. Grocery Sat/Sun mornings or weekday evenings 19:30+. Date night Sat 19:30+. Family dinner Sun 17:00. P1→Mon-Tue, P2→Wed-Fri, P3+→weekend. Honour dueDate.
 Return ONLY JSON array: [{"id":"...","scheduledDate":"YYYY-MM-DD","scheduledTime":"HH:MM"}]`
       );
-      const data   = await res.json();
-      const sched  = JSON.parse((geminiText(data)||"[]").replace(/```json|```/g,"").trim());
-      const updated = tasks.map(t => { const s=sched.find(x=>x.id===t.id); return s ? {...t,scheduledDate:s.scheduledDate,scheduledTime:s.scheduledTime} : t; });
+      const data  = await res.json();
+      const sched = JSON.parse((geminiText(data) || "[]").replace(/```json|```/g, "").trim());
+      const updated = tasks.map(t => { const s = sched.find(x => x.id === t.id); return s ? { ...t, scheduledDate: s.scheduledDate, scheduledTime: s.scheduledTime } : t; });
       await persist(updated);
       pushNotif("Family HQ", "Week scheduled! " + sched.length + " tasks placed.");
-      setAiLog(l => [...l, { role:"ai", text:`✨ Scheduled ${sched.length} tasks for the week!` }]);
+      setAiLog(l => [...l, { role: "ai", text: `Scheduled ${sched.length} tasks for the week!` }]);
       setView("calendar");
-    } catch { setAiLog(l => [...l, { role:"ai", text:"Scheduling failed. Try again." }]); }
+    } catch { setAiLog(l => [...l, { role: "ai", text: "Scheduling failed. Try again." }]); }
     setAiLoading(false);
   };
 
@@ -121,7 +122,7 @@ Return ONLY JSON array: [{"id":"...","scheduledDate":"YYYY-MM-DD","scheduledTime
     setAiLoading(true);
     const overdue = tasks.filter(t => !t.done && t.dueDate && t.dueDate < TODAY);
     if (!overdue.length) {
-      setAiLog(l => [...l, { role:"ai", text:"No overdue tasks — you're on top of it! 🎉" }]);
+      setAiLog(l => [...l, { role: "ai", text: "No overdue tasks — you're on top of it! 🎉" }]);
       setView("ai");
       setAiLoading(false);
       return;
@@ -134,12 +135,12 @@ Week dates: ${WEEK.join(", ")}
 Return ONLY JSON: [{"id":"...","priority":1,"scheduledDate":"YYYY-MM-DD","scheduledTime":"HH:MM"}]`
       );
       const data    = await res.json();
-      const updates = JSON.parse((geminiText(data)||"[]").replace(/```json|```/g,"").trim());
-      const updated = tasks.map(t => { const u=updates.find(x=>x.id===t.id); return u ? {...t,...u} : t; });
+      const updates = JSON.parse((geminiText(data) || "[]").replace(/```json|```/g, "").trim());
+      const updated = tasks.map(t => { const u = updates.find(x => x.id === t.id); return u ? { ...t, ...u } : t; });
       await persist(updated);
-      setAiLog(l => [...l, { role:"ai", text:`✅ Reprioritized and rescheduled ${updates.length} overdue tasks.` }]);
+      setAiLog(l => [...l, { role: "ai", text: `Reprioritized and rescheduled ${updates.length} overdue tasks.` }]);
       setView("ai");
-    } catch { setAiLog(l => [...l, { role:"ai", text:"Reprioritization failed." }]); }
+    } catch { setAiLog(l => [...l, { role: "ai", text: "Reprioritization failed." }]); }
     setAiLoading(false);
   };
 
@@ -147,7 +148,7 @@ Return ONLY JSON: [{"id":"...","priority":1,"scheduledDate":"YYYY-MM-DD","schedu
     const msg = aiInput.trim();
     if (!msg) return;
     if (!apiKey) { setShowSettings(true); return; }
-    setAiInput(""); setAiLog(l => [...l, { role:"user", text:msg }]); setAiLoading(true);
+    setAiInput(""); setAiLog(l => [...l, { role: "user", text: msg }]); setAiLoading(true);
     try {
       const res  = await geminiCall(
 `Manage tasks for Bhargav & Rupa (toddler family). Current tasks: ${JSON.stringify(tasks.map(t=>({id:t.id,title:t.title,category:t.category,priority:t.priority,assignee:t.assignee,done:t.done,scheduledDate:t.scheduledDate,recurrence:t.recurrence})))}
@@ -159,79 +160,63 @@ Return ONLY one of these JSON actions (no markdown):
 {"action":"chat","message":"..."}`
       );
       const data   = await res.json();
-      const result = JSON.parse((geminiText(data)||"{}").replace(/```json|```/g,"").trim());
+      const result = JSON.parse((geminiText(data) || "{}").replace(/```json|```/g, "").trim());
       if (result.action === "add") {
         const nt = { ...result.task, id: uid() };
         await persist([...tasks, nt]);
-        setAiLog(l => [...l, { role:"ai", text:`Added "${nt.title}" to ${CATS[nt.category]?.l||nt.category}.${nt.recurrence?" Repeats "+nt.recurrence+".":""}` }]);
+        setAiLog(l => [...l, { role: "ai", text: `Added "${nt.title}" to ${CATS[nt.category]?.l || nt.category}.${nt.recurrence ? " Repeats " + nt.recurrence + "." : ""}` }]);
       } else if (result.action === "update") {
-        await persist(tasks.map(t => t.id===result.id ? {...t,...result.changes} : t));
-        setAiLog(l => [...l, { role:"ai", text:`Updated "${tasks.find(t=>t.id===result.id)?.title||"task"}".` }]);
+        await persist(tasks.map(t => t.id === result.id ? { ...t, ...result.changes } : t));
+        setAiLog(l => [...l, { role: "ai", text: `Updated "${tasks.find(t => t.id === result.id)?.title || "task"}".` }]);
       } else if (result.action === "delete") {
-        const title = tasks.find(t => t.id===result.id)?.title;
+        const title = tasks.find(t => t.id === result.id)?.title;
         await persist(tasks.filter(t => t.id !== result.id));
-        setAiLog(l => [...l, { role:"ai", text:`Removed "${title}".` }]);
+        setAiLog(l => [...l, { role: "ai", text: `Removed "${title}".` }]);
       } else {
-        setAiLog(l => [...l, { role:"ai", text: result.message || "Done!" }]);
+        setAiLog(l => [...l, { role: "ai", text: result.message || "Done!" }]);
       }
-    } catch { setAiLog(l => [...l, { role:"ai", text:"Something went wrong." }]); }
+    } catch { setAiLog(l => [...l, { role: "ai", text: "Something went wrong." }]); }
     setAiLoading(false);
   };
 
   const alertCount = tasks.filter(t => !t.done && ((t.dueDate && t.dueDate <= TODAY) || t.scheduledDate === TODAY)).length;
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
-        input,select,textarea,button{font-family:'DM Sans',sans-serif;}
-        ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:#F7F4EF;} ::-webkit-scrollbar-thumb{background:#C8BFB0;border-radius:2px;}
-      `}</style>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
+      <Sidebar
+        user={user}
+        view={view}
+        setView={setView}
+        apiKey={apiKey}
+        alertCount={alertCount}
+        syncMsg={syncMsg}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        setShowNotifs={setShowNotifs}
+        setShowSettings={setShowSettings}
+        switchUser={switchUser}
+        isMobile={mobile}
+        tasks={tasks}
+      />
 
-      <div style={{ display:"flex", minHeight:"100vh", background:"#F7F4EF", fontFamily:"'DM Sans',sans-serif" }}>
-
-        {sidebarOpen && mobile && (
-          <div onClick={() => setSidebarOpen(false)}
-            style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", zIndex:150 }} />
+      <Box component="main" sx={{ flex: 1, overflow: "auto", p: mobile ? 2 : "32px 36px" }}>
+        {mobile && (
+          <Box
+            component="button"
+            onClick={() => setSidebarOpen(s => !s)}
+            sx={{ mb: 2, bgcolor: "#1E3612", border: "none", borderRadius: 2, color: "white", p: "8px 12px", fontSize: 18, cursor: "pointer", lineHeight: 1 }}
+          >
+            ☰
+          </Box>
         )}
+        {view === "dashboard" && <Dashboard tasks={tasks} onToggle={toggleDone} onAdd={() => setShowAdd(true)} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={setView} />}
+        {view === "lists"     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={t => setEditTask(t)} onAdd={() => setShowAdd(true)} />}
+        {view === "calendar"  && <CalView   tasks={tasks} onToggle={toggleDone} />}
+        {view === "ai"        && <AIView    log={aiLog} input={aiInput} setInput={setAiInput} onSend={sendChat} onSchedule={autoSchedule} loading={aiLoading} />}
+      </Box>
 
-        <Sidebar
-          user={user}
-          view={view}
-          setView={setView}
-          apiKey={apiKey}
-          alertCount={alertCount}
-          syncMsg={syncMsg}
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          setShowNotifs={setShowNotifs}
-          setShowSettings={setShowSettings}
-          switchUser={switchUser}
-          isMobile={mobile}
-          tasks={tasks}
-        />
-
-        <main style={{ flex:1, overflow:"auto", padding:mobile ? "16px" : "32px 36px" }}>
-          {mobile && (
-            <button onClick={() => setSidebarOpen(s => !s)}
-              style={{ marginBottom:16, background:"#1E3612", border:"none", borderRadius:8, color:"white", padding:"8px 12px", fontSize:18, cursor:"pointer", lineHeight:1 }}>
-              ☰
-            </button>
-          )}
-          {view === "dashboard" && <Dashboard tasks={tasks} onToggle={toggleDone} onAdd={() => setShowAdd(true)} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={setView} />}
-          {view === "lists"     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={t => setEditTask(t)} onAdd={() => setShowAdd(true)} />}
-          {view === "calendar"  && <CalView   tasks={tasks} onToggle={toggleDone} />}
-          {view === "ai"        && <AIView    log={aiLog} input={aiInput} setInput={setAiInput} onSend={sendChat} onSchedule={autoSchedule} loading={aiLoading} />}
-        </main>
-      </div>
-
-      {showNotifs && (
-        <>
-          <div onClick={() => setShowNotifs(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.2)", zIndex:299 }} />
-          <NotifPanel tasks={tasks} onClose={() => setShowNotifs(false)} />
-        </>
-      )}
+      {/* NotifPanel as MUI Drawer — always mounted, open prop controls visibility */}
+      <NotifPanel tasks={tasks} onClose={() => setShowNotifs(false)} open={showNotifs} />
 
       {(showAdd || editTask) && (
         <TaskModal task={editTask} onSave={saveTask} onClose={() => { setShowAdd(false); setEditTask(null); }} />
@@ -244,6 +229,6 @@ Return ONLY one of these JSON actions (no markdown):
           onClose={() => setShowSettings(false)}
         />
       )}
-    </>
+    </Box>
   );
 }

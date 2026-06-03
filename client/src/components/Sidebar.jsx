@@ -1,77 +1,156 @@
-export function Sidebar({ user, view, setView, apiKey, alertCount, syncMsg, sidebarOpen,
-  setSidebarOpen, setShowNotifs, setShowSettings, switchUser, isMobile, tasks }) {
+import {
+  Drawer, List, ListItemButton, ListItemIcon, ListItemText,
+  Box, Typography, Divider, Badge, Stack, IconButton,
+} from '@mui/material';
+import DashboardOutlinedIcon      from '@mui/icons-material/DashboardOutlined';
+import FormatListBulletedIcon     from '@mui/icons-material/FormatListBulleted';
+import CalendarMonthOutlinedIcon  from '@mui/icons-material/CalendarMonthOutlined';
+import AutoAwesomeIcon            from '@mui/icons-material/AutoAwesome';
+import NotificationsOutlinedIcon  from '@mui/icons-material/NotificationsOutlined';
+import SettingsOutlinedIcon       from '@mui/icons-material/SettingsOutlined';
+import FiberManualRecordIcon      from '@mui/icons-material/FiberManualRecord';
 
-  const syncColors = { synced:"rgba(255,255,255,0.25)", syncing:"#D69E2E" };
+const DRAWER_WIDTH = 232;
 
+const NAV = [
+  { view: 'dashboard', icon: <DashboardOutlinedIcon />,     label: 'Dashboard'    },
+  { view: 'lists',     icon: <FormatListBulletedIcon />,    label: 'All Tasks'    },
+  { view: 'calendar',  icon: <CalendarMonthOutlinedIcon />, label: 'Schedule'     },
+  { view: 'ai',        icon: <AutoAwesomeIcon />,           label: 'AI Assistant' },
+];
+
+function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setSidebarOpen, setShowNotifs, setShowSettings, switchUser, isMobile, tasks }) {
   return (
-    <aside style={{ width:224, background:"#1E3612", color:"white", display:"flex",
-      flexDirection:"column", flexShrink:0,
-      ...(isMobile ? { position:"fixed", top:0, left:0, height:"100vh", zIndex:200,
-        transform:sidebarOpen?"translateX(0)":"translateX(-100%)", transition:"transform 0.25s ease" } : {}) }}>
-
-      {/* Header */}
-      <div style={{ padding:"24px 20px 18px", borderBottom:"1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:21, fontWeight:600, lineHeight:1.2 }}>Family HQ</div>
-        <div style={{ fontSize:10, opacity:0.35, letterSpacing:"0.12em", textTransform:"uppercase", marginTop:2, marginBottom:14 }}>Life Planner</div>
-        <div style={{ display:"flex", gap:6 }}>
-          {["Bhargav","Rupa"].map(u => (
-            <button key={u} onClick={()=>switchUser(u)}
-              style={{ flex:1, padding:"7px 4px", borderRadius:7, border:"1px solid", cursor:"pointer",
-                fontSize:12, fontWeight:500, transition:"all 0.15s",
-                borderColor:user===u?"rgba(255,255,255,0.55)":"rgba(255,255,255,0.15)",
-                background:user===u?"rgba(255,255,255,0.15)":"transparent",
-                color:user===u?"white":"rgba(255,255,255,0.38)" }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#1E3612', color: 'white' }}>
+      {/* Brand */}
+      <Box sx={{ px: 2.5, pt: 3, pb: 2.25, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <Typography sx={{ fontSize: 20, fontWeight: 600, lineHeight: 1.2, color: 'white' }}>
+          Family HQ
+        </Typography>
+        <Typography sx={{ fontSize: 10, opacity: 0.35, letterSpacing: '0.14em', textTransform: 'uppercase', mb: 1.75, color: 'white' }}>
+          Life Planner
+        </Typography>
+        {/* User switcher */}
+        <Stack direction="row" spacing={0.75}>
+          {['Bhargav', 'Rupa'].map(u => (
+            <Box
+              key={u}
+              component="button"
+              onClick={() => switchUser(u)}
+              sx={{
+                flex: 1, py: '7px', px: '4px', borderRadius: '7px',
+                border: '1px solid',
+                borderColor: user === u ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.15)',
+                bgcolor: user === u ? 'rgba(255,255,255,0.15)' : 'transparent',
+                color: user === u ? 'white' : 'rgba(255,255,255,0.38)',
+                fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                cursor: 'pointer', transition: 'all 0.15s',
+                '&:hover': { borderColor: 'rgba(255,255,255,0.4)', color: 'rgba(255,255,255,0.8)' },
+              }}
+            >
               {u[0]} {u}
-            </button>
+            </Box>
           ))}
-        </div>
-      </div>
+        </Stack>
+      </Box>
 
       {/* Nav */}
-      <nav style={{ padding:"14px 0", flex:1 }}>
-        {[["dashboard","◈","Dashboard"],["lists","≡","All Tasks"],["calendar","◻","Schedule"],["ai","✦","AI Assistant"]].map(([v,icon,label]) => (
-          <button key={v} onClick={()=>{ setView(v); if(isMobile) setSidebarOpen(false); }}
-            style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"11px 20px",
-              background:view===v?"rgba(255,255,255,0.1)":"transparent", border:"none",
-              borderLeft:view===v?"2px solid #8DC76B":"2px solid transparent",
-              color:view===v?"white":"rgba(255,255,255,0.38)",
-              fontSize:14, cursor:"pointer", transition:"all 0.15s", textAlign:"left" }}>
-            <span style={{ fontSize:15, lineHeight:1 }}>{icon}</span>{label}
-          </button>
+      <List sx={{ flex: 1, py: 1.5 }} disablePadding>
+        {NAV.map(({ view: v, icon, label }) => (
+          <ListItemButton
+            key={v}
+            selected={view === v}
+            onClick={() => { setView(v); if (isMobile) setSidebarOpen(false); }}
+            sx={{
+              py: 1.25, px: 2.5,
+              borderLeft: '2px solid',
+              borderLeftColor: view === v ? '#8DC76B' : 'transparent',
+              color: view === v ? 'white' : 'rgba(255,255,255,0.4)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.07)', color: 'white' },
+              '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' } },
+              gap: 1.25,
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, color: 'inherit', '& svg': { fontSize: 20 } }}>{icon}</ListItemIcon>
+            <ListItemText
+              primary={label}
+              primaryTypographyProps={{ fontSize: 14, fontWeight: view === v ? 500 : 400, color: 'inherit' }}
+            />
+          </ListItemButton>
         ))}
-      </nav>
+      </List>
 
       {/* Footer */}
-      <div style={{ padding:"16px 20px", borderTop:"1px solid rgba(255,255,255,0.08)", display:"flex", flexDirection:"column", gap:8 }}>
-        <button onClick={()=>setShowNotifs(v=>!v)}
-          style={{ width:"100%", padding:"9px", borderRadius:8, border:"1px solid rgba(255,255,255,0.18)",
-            background:"transparent", color:"white", cursor:"pointer",
-            display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontSize:13 }}>
-          🔔 Alerts
-          {alertCount > 0 && (
-            <span style={{ background:"#E53E3E", color:"white", borderRadius:10, padding:"1px 6px", fontSize:11, fontWeight:700 }}>
-              {alertCount}
-            </span>
-          )}
-        </button>
-        <button onClick={()=>setShowSettings(true)}
-          style={{ width:"100%", padding:"9px", borderRadius:8, border:"1px solid rgba(255,255,255,0.18)",
-            background:apiKey?"transparent":"rgba(214,158,46,0.25)",
-            color:apiKey?"rgba(255,255,255,0.5)":"#FBD38D",
-            cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-          ⚙ {apiKey ? "Settings" : "Set AI Key"}
-        </button>
-        <div style={{ textAlign:"center", fontSize:11 }}>
-          <span style={{ display:"inline-block", width:6, height:6, borderRadius:"50%",
-            background:syncColors[syncMsg]||"rgba(255,255,255,0.25)", marginRight:4, verticalAlign:"middle" }} />
-          <span style={{ opacity:0.35 }}>{syncMsg==="syncing" ? "Saving…" : "Synced"}</span>
-        </div>
+      <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
+      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 0.875 }}>
+        <Box
+          component="button"
+          onClick={() => setShowNotifs(v => !v)}
+          sx={{
+            width: '100%', py: '9px', borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.18)',
+            bgcolor: 'transparent', color: 'white',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1,
+            fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.07)' },
+          }}
+        >
+          <Badge badgeContent={alertCount} color="error">
+            <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
+          </Badge>
+          Alerts
+        </Box>
+        <Box
+          component="button"
+          onClick={() => setShowSettings(true)}
+          sx={{
+            width: '100%', py: '9px', borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.18)',
+            bgcolor: apiKey ? 'transparent' : 'rgba(214,158,46,0.25)',
+            color: apiKey ? 'rgba(255,255,255,0.5)' : '#FBD38D',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75,
+            fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
+            '&:hover': { bgcolor: apiKey ? 'rgba(255,255,255,0.05)' : 'rgba(214,158,46,0.35)' },
+          }}
+        >
+          <SettingsOutlinedIcon sx={{ fontSize: 16 }} />
+          {apiKey ? 'Settings' : 'Set AI Key'}
+        </Box>
+        <Box sx={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+          <FiberManualRecordIcon sx={{
+            fontSize: 7,
+            color: syncMsg === 'syncing' ? '#D69E2E' : 'rgba(255,255,255,0.25)',
+          }} />
+          <Typography sx={{ fontSize: 11, opacity: 0.35, color: 'white' }}>
+            {syncMsg === 'syncing' ? 'Saving…' : 'Synced'}
+          </Typography>
+        </Box>
         {tasks && (
-          <div style={{ textAlign:"center", fontSize:11, opacity:0.28 }}>
+          <Typography sx={{ textAlign: 'center', fontSize: 11, opacity: 0.28, color: 'white' }}>
             {tasks.filter(t => t.done).length}/{tasks.length} done
-          </div>
+          </Typography>
         )}
-      </div>
-    </aside>
+      </Box>
+    </Box>
+  );
+}
+
+export function Sidebar(props) {
+  const { sidebarOpen, setSidebarOpen, isMobile } = props;
+
+  return (
+    <Drawer
+      variant={isMobile ? 'temporary' : 'permanent'}
+      open={isMobile ? sidebarOpen : true}
+      onClose={() => setSidebarOpen(false)}
+      ModalProps={{ keepMounted: true }}
+      sx={{
+        width: DRAWER_WIDTH,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', border: 'none' },
+      }}
+    >
+      <SidebarContent {...props} />
+    </Drawer>
   );
 }

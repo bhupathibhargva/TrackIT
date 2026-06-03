@@ -1,72 +1,103 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect } from 'react';
+import { Box, Typography, TextField, Button, Paper, Stack } from '@mui/material';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import SendIcon        from '@mui/icons-material/Send';
 
 const SUGGESTIONS = [
-  "Add swimming lessons for toddler on Saturday mornings, repeating weekly",
-  "Make the date night highest priority",
-  "Add milk, eggs, bread and butter to grocery list",
-  "Remove the insurance call",
+  'Add swimming lessons for toddler on Saturday mornings, repeating weekly',
+  'Make the date night highest priority',
+  'Add milk, eggs, bread and butter to grocery list',
+  'Remove the insurance call',
 ];
 
 export function AIView({ log, input, setInput, onSend, onSchedule, loading }) {
   const endRef = useRef(null);
-  useEffect(() => endRef.current?.scrollIntoView({ behavior:"smooth" }), [log]);
+  useEffect(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), [log]);
 
   return (
-    <div style={{ maxWidth:680 }}>
-      <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:34, fontWeight:600, marginBottom:5, color:"#1C1C1C" }}>AI Assistant</h1>
-      <p style={{ color:"#8B8278", marginBottom:22, fontSize:14 }}>Natural language task management · smart scheduling · auto-reprioritization</p>
+    <Box sx={{ maxWidth: 680 }}>
+      <Typography sx={{ fontSize: 28, fontWeight: 600, mb: 0.75, color: '#1C1C1C' }}>
+        AI Assistant
+      </Typography>
+      <Typography sx={{ color: '#8B8278', mb: 2.75, fontSize: 14 }}>
+        Natural language task management · smart scheduling · auto-reprioritization
+      </Typography>
 
-      <button onClick={onSchedule} disabled={loading}
-        style={{ width:"100%", padding:"14px", background:"#2A4A1E", color:"white", border:"none",
-          borderRadius:10, fontSize:14, fontWeight:500, cursor:loading?"not-allowed":"pointer", opacity:loading?0.7:1, marginBottom:22 }}>
-        {loading ? "⟳ Working…" : "✦ Auto-Schedule This Week"}
-      </button>
+      <Button
+        variant="contained"
+        fullWidth
+        size="large"
+        startIcon={<AutoAwesomeIcon />}
+        onClick={onSchedule}
+        disabled={loading}
+        sx={{ mb: 2.75, py: 1.5, fontSize: 15 }}
+      >
+        {loading ? 'Working…' : 'Auto-Schedule This Week'}
+      </Button>
 
-      <div style={{ background:"white", border:"1px solid #EDE8E0", borderRadius:12, overflow:"hidden" }}>
-        <div style={{ padding:20, minHeight:280, maxHeight:380, overflow:"auto" }}>
+      <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+        <Box sx={{ p: 2.5, minHeight: 280, maxHeight: 380, overflow: 'auto' }}>
           {log.length === 0 ? (
-            <div style={{ color:"#8B8278", textAlign:"center", paddingTop:24 }}>
-              <div style={{ fontSize:28, marginBottom:10 }}>✦</div>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, marginBottom:14 }}>Ask me anything</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+            <Box sx={{ color: '#8B8278', textAlign: 'center', pt: 2.5 }}>
+              <AutoAwesomeIcon sx={{ fontSize: 30, mb: 1.25, opacity: 0.4 }} />
+              <Typography sx={{ fontSize: 18, fontWeight: 500, mb: 1.75, color: '#5A5248' }}>
+                Ask me anything
+              </Typography>
+              <Stack spacing={0.75}>
                 {SUGGESTIONS.map((s, i) => (
-                  <button key={i} onClick={() => setInput(s)}
-                    style={{ fontSize:13, color:"#5A5248", background:"#F7F4EF", border:"1px solid #EDE8E0", borderRadius:7, padding:"8px 12px", cursor:"pointer", textAlign:"left" }}>
+                  <Button key={i} variant="outlined" size="small" onClick={() => setInput(s)} sx={{
+                    fontSize: 13, color: '#5A5248', textAlign: 'left',
+                    borderColor: '#EDE8E0', bgcolor: '#F7F4EF',
+                    textTransform: 'none', justifyContent: 'flex-start',
+                    '&:hover': { bgcolor: '#EDE8E0', borderColor: '#E2DAD0' },
+                  }}>
                     "{s}"
-                  </button>
+                  </Button>
                 ))}
-              </div>
-            </div>
+              </Stack>
+            </Box>
           ) : (
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            <Stack spacing={1.25}>
               {log.map((m, i) => (
-                <div key={i} style={{ display:"flex", justifyContent:m.role==="user"?"flex-end":"flex-start" }}>
-                  <div style={{ maxWidth:"80%", padding:"10px 14px", borderRadius:10, lineHeight:1.55, fontSize:14,
-                    background:m.role==="user"?"#2A4A1E":"#F7F4EF", color:m.role==="user"?"white":"#1C1C1C" }}>
+                <Box key={i} sx={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                  <Box sx={{
+                    maxWidth: '80%', px: 1.75, py: 1.25, borderRadius: 2, lineHeight: 1.55, fontSize: 14,
+                    bgcolor: m.role === 'user' ? 'primary.main' : '#F7F4EF',
+                    color: m.role === 'user' ? 'white' : '#1C1C1C',
+                  }}>
                     {m.text}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               ))}
               {loading && (
-                <div style={{ fontSize:14, color:"#8B8278", padding:"10px 14px", background:"#F7F4EF", borderRadius:10, maxWidth:"50%" }}>Thinking…</div>
+                <Box sx={{ fontSize: 14, color: '#8B8278', px: 1.75, py: 1.25, bgcolor: '#F7F4EF', borderRadius: 2, maxWidth: '50%' }}>
+                  Thinking…
+                </Box>
               )}
-            </div>
+            </Stack>
           )}
           <div ref={endRef} />
-        </div>
+        </Box>
 
-        <div style={{ borderTop:"1px solid #EDE8E0", padding:14, display:"flex", gap:10 }}>
-          <input value={input} onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key==="Enter" && !e.shiftKey && onSend()}
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', p: 1.75, display: 'flex', gap: 1.25 }}>
+          <TextField
+            fullWidth size="small"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && onSend()}
             placeholder="Add, change, or remove tasks in plain English…"
-            style={{ flex:1, padding:"10px 14px", border:"1px solid #E2DAD0", borderRadius:8, fontSize:14, outline:"none" }} />
-          <button onClick={onSend} disabled={loading || !input.trim()}
-            style={{ padding:"10px 18px", background:"#2A4A1E", color:"white", border:"none",
-              borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", opacity:loading||!input.trim()?0.6:1 }}>
+          />
+          <Button
+            variant="contained"
+            onClick={onSend}
+            disabled={loading || !input.trim()}
+            endIcon={<SendIcon />}
+            sx={{ px: 2.25, flexShrink: 0, textTransform: 'none' }}
+          >
             Send
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Box>
+      </Paper>
+    </Box>
   );
 }
