@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import { CATS, WEEK, TODAY, uid, MOBILE_BREAKPOINT, RECURRING_SEPARATOR } from './constants.js';
 import { loadData, persistData, loadUser, saveUser, loadApiKey, saveApiKey } from './storage.js';
+import { supabase } from './supabase.js';
 import { reqNotif, pushNotif } from './utils.js';
 import { callGemini } from './gemini.js';
 import { schedulePrompt, reprioritizePrompt, chatPrompt } from './prompts.js';
@@ -41,6 +42,19 @@ export default function App() {
     const onResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Poll Supabase every 30 s so Siri-added tasks appear without a refresh
+  useEffect(() => {
+    if (!supabase) return;
+    const poll = setInterval(async () => {
+      const { tasks: fresh } = await loadData();
+      setTasks(prev => {
+        const prevIds = new Set(prev.map(t => t.id));
+        return fresh.some(t => !prevIds.has(t.id)) ? fresh : prev;
+      });
+    }, 30_000);
+    return () => clearInterval(poll);
   }, []);
 
   const persist = async (updated) => {
