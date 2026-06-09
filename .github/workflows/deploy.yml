@@ -32,7 +32,8 @@ jobs:
           VITE_BASE_URL: /TrackIT/
 
       - name: Deploy to gh-pages branch
-        uses: peaceiris/actions-gh-pages@v3
+        # Pinned to the v4.0.0 commit SHA so a moved tag can't swap in different code
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./client/dist

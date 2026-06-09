@@ -1,11 +1,10 @@
 package com.trackit.user.goals.models;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 
 @Entity
@@ -16,7 +15,7 @@ public class Goal {
 	private long id;
 	private String name;
 	private String type;
-	 
+
 	public long getId() {
 		return id;
 	}
@@ -35,7 +34,7 @@ public class Goal {
 	public void setType(String type) {
 		this.type = type;
 	}
-	 
-	 
-	 
+
+
+
 }
