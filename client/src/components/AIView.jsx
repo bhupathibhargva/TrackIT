@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Paper, Stack } from '@mui/material';
+import { Box, Typography, TextField, IconButton, Card, CardContent, Stack, Button } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SendIcon        from '@mui/icons-material/Send';
 
@@ -15,63 +15,96 @@ export function AIView({ log, input, setInput, onSend, onSchedule, loading }) {
   useEffect(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), [log]);
 
   return (
-    <Box sx={{ maxWidth: 680 }}>
-      <Typography sx={{ fontSize: 28, fontWeight: 600, mb: 0.75, color: '#25221F' }}>
-        AI Assistant
-      </Typography>
-      <Typography sx={{ color: '#706A63', mb: 2.75, fontSize: 14 }}>
-        Natural language task management · smart scheduling · auto-reprioritization
-      </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', maxWidth: 700 }}>
+      {/* Header */}
+      <Box sx={{ mb: 2.5, flexShrink: 0 }}>
+        <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1C1917', letterSpacing: '-0.02em', mb: 0.5 }}>
+          AI Assistant
+        </Typography>
+        <Typography sx={{ color: '#78716C', fontSize: 13.5 }}>
+          Natural language task management · smart scheduling · auto-reprioritization
+        </Typography>
+      </Box>
 
+      {/* Auto-schedule CTA */}
       <Button
         variant="contained"
         fullWidth
-        size="large"
         startIcon={<AutoAwesomeIcon />}
         onClick={onSchedule}
         disabled={loading}
-        sx={{ mb: 2.75, py: 1.5, fontSize: 15 }}
+        sx={{ mb: 2.5, py: 1.25, fontSize: 14, fontWeight: 600, borderRadius: 2, flexShrink: 0 }}
       >
         {loading ? 'Working…' : 'Auto-Schedule This Week'}
       </Button>
 
-      <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Box sx={{ p: 2.5, minHeight: 280, maxHeight: 380, overflow: 'auto' }}>
+      {/* Chat area */}
+      <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Messages */}
+        <Box sx={{ flex: 1, overflow: 'auto', p: 2.5 }}>
           {log.length === 0 ? (
-            <Box sx={{ color: '#706A63', textAlign: 'center', pt: 2.5 }}>
-              <AutoAwesomeIcon sx={{ fontSize: 30, mb: 1.25, opacity: 0.4 }} />
-              <Typography sx={{ fontSize: 18, fontWeight: 500, mb: 1.75, color: '#5C4A3A' }}>
+            <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{
+                width: 52, height: 52, borderRadius: '50%', bgcolor: '#FAE8DE',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1.5,
+              }}>
+                <AutoAwesomeIcon sx={{ fontSize: 24, color: 'primary.main' }} />
+              </Box>
+              <Typography sx={{ fontSize: 17, fontWeight: 600, color: '#1C1917', mb: 0.5 }}>
                 Ask me anything
               </Typography>
-              <Stack spacing={0.75}>
+              <Typography sx={{ fontSize: 13, color: '#A8A29E', mb: 2.5, textAlign: 'center' }}>
+                Try one of these to get started
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, width: '100%', maxWidth: 560 }}>
                 {SUGGESTIONS.map((s, i) => (
-                  <Button key={i} variant="outlined" size="small" onClick={() => setInput(s)} sx={{
-                    fontSize: 13, color: '#5C4A3A', textAlign: 'left',
-                    borderColor: '#E4DDD3', bgcolor: '#F5EFE8',
-                    textTransform: 'none', justifyContent: 'flex-start',
-                    '&:hover': { bgcolor: '#EDE3D8', borderColor: '#E4DDD3' },
+                  <Button key={i} variant="outlined" onClick={() => setInput(s)} sx={{
+                    fontSize: 12, color: '#5C4A3A', textAlign: 'left',
+                    borderColor: '#EAE4DC', bgcolor: '#F7F2EC',
+                    textTransform: 'none', justifyContent: 'flex-start', alignItems: 'flex-start',
+                    p: '10px 12px', lineHeight: 1.45, borderRadius: 2,
+                    '&:hover': { bgcolor: '#EDE3D8', borderColor: '#C05C2E' },
                   }}>
                     "{s}"
                   </Button>
                 ))}
-              </Stack>
+              </Box>
             </Box>
           ) : (
-            <Stack spacing={1.25}>
+            <Stack spacing={1.5}>
               {log.map((m, i) => (
                 <Box key={i} sx={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                  {m.role === 'assistant' && (
+                    <Box sx={{
+                      width: 26, height: 26, borderRadius: '50%', bgcolor: '#FAE8DE',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      mr: 1, mt: 0.25, flexShrink: 0,
+                    }}>
+                      <AutoAwesomeIcon sx={{ fontSize: 14, color: 'primary.main' }} />
+                    </Box>
+                  )}
                   <Box sx={{
-                    maxWidth: '80%', px: 1.75, py: 1.25, borderRadius: 2, lineHeight: 1.55, fontSize: 14,
-                    bgcolor: m.role === 'user' ? 'primary.main' : '#F5EFE8',
-                    color: m.role === 'user' ? 'white' : '#25221F',
+                    maxWidth: '75%', px: 1.75, py: 1.125, lineHeight: 1.6, fontSize: 14,
+                    borderRadius: m.role === 'user' ? '14px 14px 4px 14px' : '4px 14px 14px 14px',
+                    bgcolor: m.role === 'user' ? 'primary.main' : '#F7F2EC',
+                    color: m.role === 'user' ? 'white' : '#1C1917',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
                   }}>
                     {m.text}
                   </Box>
                 </Box>
               ))}
               {loading && (
-                <Box sx={{ fontSize: 14, color: '#706A63', px: 1.75, py: 1.25, bgcolor: '#F5EFE8', borderRadius: 2, maxWidth: '50%' }}>
-                  Thinking…
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{
+                    width: 26, height: 26, borderRadius: '50%', bgcolor: '#FAE8DE',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <AutoAwesomeIcon sx={{ fontSize: 14, color: 'primary.main' }} />
+                  </Box>
+                  <Box sx={{ fontSize: 14, color: '#78716C', px: 1.75, py: 1.125, bgcolor: '#F7F2EC', borderRadius: '4px 14px 14px 14px' }}>
+                    Thinking…
+                  </Box>
                 </Box>
               )}
             </Stack>
@@ -79,25 +112,29 @@ export function AIView({ log, input, setInput, onSend, onSchedule, loading }) {
           <div ref={endRef} />
         </Box>
 
-        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', p: 1.75, display: 'flex', gap: 1.25 }}>
+        {/* Input */}
+        <Box sx={{ borderTop: '1px solid #EAE4DC', p: 1.5, display: 'flex', gap: 1, alignItems: 'flex-end', bgcolor: '#FDFAF6' }}>
           <TextField
             fullWidth size="small"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && onSend()}
             placeholder="Add, change, or remove tasks in plain English…"
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px', bgcolor: 'white' } }}
           />
-          <Button
-            variant="contained"
+          <IconButton
             onClick={onSend}
             disabled={loading || !input.trim()}
-            endIcon={<SendIcon />}
-            sx={{ px: 2.25, flexShrink: 0, textTransform: 'none' }}
+            sx={{
+              bgcolor: 'primary.main', color: 'white', borderRadius: 2, width: 38, height: 38, flexShrink: 0,
+              '&:hover': { bgcolor: 'primary.dark' },
+              '&.Mui-disabled': { bgcolor: '#EAE4DC', color: '#A8A29E' },
+            }}
           >
-            Send
-          </Button>
+            <SendIcon sx={{ fontSize: 17 }} />
+          </IconButton>
         </Box>
-      </Paper>
+      </Card>
     </Box>
   );
 }

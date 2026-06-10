@@ -2,13 +2,12 @@ import {
   Drawer, List, ListItemButton, ListItemIcon, ListItemText,
   Box, Typography, Divider, Badge, Stack,
 } from '@mui/material';
-import DashboardOutlinedIcon      from '@mui/icons-material/DashboardOutlined';
-import FormatListBulletedIcon     from '@mui/icons-material/FormatListBulleted';
-import CalendarMonthOutlinedIcon  from '@mui/icons-material/CalendarMonthOutlined';
-import AutoAwesomeIcon            from '@mui/icons-material/AutoAwesome';
-import NotificationsOutlinedIcon  from '@mui/icons-material/NotificationsOutlined';
-import SettingsOutlinedIcon       from '@mui/icons-material/SettingsOutlined';
-import FiberManualRecordIcon      from '@mui/icons-material/FiberManualRecord';
+import DashboardOutlinedIcon     from '@mui/icons-material/DashboardOutlined';
+import FormatListBulletedIcon    from '@mui/icons-material/FormatListBulleted';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import AutoAwesomeIcon           from '@mui/icons-material/AutoAwesome';
+import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import SettingsOutlinedIcon      from '@mui/icons-material/SettingsOutlined';
 
 const DRAWER_WIDTH = 232;
 
@@ -22,112 +21,149 @@ const NAV_ITEMS = [
 const ASSIGNEES = ['Bhargav', 'Rupa'];
 
 function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setSidebarOpen, setShowNotifs, setShowSettings, switchUser, isMobile, tasks }) {
+  const doneTasks  = tasks ? tasks.filter(t => t.done).length : 0;
+  const totalTasks = tasks ? tasks.length : 0;
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#27201A', color: 'white' }}>
-      <Box sx={{ px: 2.5, pt: 3, pb: 2.25, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <Typography sx={{ fontSize: 20, fontWeight: 600, lineHeight: 1.2, color: 'white' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#1E1511', color: 'white' }}>
+      {/* Brand */}
+      <Box sx={{ px: 2.5, pt: 3, pb: 2, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <Typography sx={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em', color: 'white', lineHeight: 1.2 }}>
           Family HQ
         </Typography>
-        <Typography sx={{ fontSize: 10, opacity: 0.35, letterSpacing: '0.14em', textTransform: 'uppercase', mb: 1.75, color: 'white' }}>
+        <Typography sx={{ fontSize: 10, opacity: 0.3, letterSpacing: '0.12em', textTransform: 'uppercase', mt: 0.25, color: 'white' }}>
           Life Planner
         </Typography>
-        <Stack direction="row" spacing={0.75}>
-          {ASSIGNEES.map(name => (
-            <Box
-              key={name}
-              component="button"
-              onClick={() => switchUser(name)}
-              sx={{
-                flex: 1, py: '7px', px: '4px', borderRadius: '7px',
-                border: '1px solid',
-                borderColor: user === name ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.15)',
-                bgcolor: user === name ? 'rgba(255,255,255,0.15)' : 'transparent',
-                color: user === name ? 'white' : 'rgba(255,255,255,0.38)',
-                fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
-                cursor: 'pointer', transition: 'all 0.15s',
-                '&:hover': { borderColor: 'rgba(255,255,255,0.4)', color: 'rgba(255,255,255,0.8)' },
-              }}
-            >
-              {name[0]} {name}
-            </Box>
-          ))}
+
+        {/* Avatar user switcher */}
+        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+          {ASSIGNEES.map(name => {
+            const active = user === name;
+            return (
+              <Box
+                key={name}
+                component="button"
+                onClick={() => switchUser(name)}
+                sx={{
+                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  gap: '5px', py: 1, px: 0.5, borderRadius: '10px',
+                  border: '1.5px solid',
+                  borderColor: active ? 'rgba(232,145,107,0.55)' : 'rgba(255,255,255,0.08)',
+                  bgcolor: active ? 'rgba(255,255,255,0.07)' : 'transparent',
+                  cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.07)', borderColor: active ? 'rgba(232,145,107,0.55)' : 'rgba(255,255,255,0.18)' },
+                }}
+              >
+                <Box sx={{
+                  width: 34, height: 34, borderRadius: '50%',
+                  bgcolor: active ? '#E8916B' : 'rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 13, fontWeight: 700, color: active ? 'white' : 'rgba(255,255,255,0.4)',
+                  border: `2px solid ${active ? 'rgba(255,255,255,0.25)' : 'transparent'}`,
+                }}>
+                  {name[0]}
+                </Box>
+                <Typography sx={{ fontSize: 11, fontWeight: active ? 600 : 400, color: active ? 'white' : 'rgba(255,255,255,0.35)', fontFamily: 'inherit' }}>
+                  {name}
+                </Typography>
+              </Box>
+            );
+          })}
         </Stack>
       </Box>
 
-      <List sx={{ flex: 1, py: 1.5 }} disablePadding>
-        {NAV_ITEMS.map(({ view: navView, icon, label }) => (
-          <ListItemButton
-            key={navView}
-            selected={view === navView}
-            onClick={() => { setView(navView); if (isMobile) setSidebarOpen(false); }}
-            sx={{
-              py: 1.25, px: 2.5,
-              borderLeft: '2px solid',
-              borderLeftColor: view === navView ? '#E8956A' : 'transparent',
-              color: view === navView ? 'white' : 'rgba(255,255,255,0.4)',
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.07)', color: 'white' },
-              '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' } },
-              gap: 1.25,
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 0, color: 'inherit', '& svg': { fontSize: 20 } }}>{icon}</ListItemIcon>
-            <ListItemText
-              primary={label}
-              primaryTypographyProps={{ fontSize: 14, fontWeight: view === navView ? 500 : 400, color: 'inherit' }}
-            />
-          </ListItemButton>
-        ))}
+      {/* Nav */}
+      <List sx={{ flex: 1, py: 1.5, px: 0 }} disablePadding>
+        {NAV_ITEMS.map(({ view: navView, icon, label }) => {
+          const active = view === navView;
+          return (
+            <ListItemButton
+              key={navView}
+              selected={active}
+              onClick={() => { setView(navView); if (isMobile) setSidebarOpen(false); }}
+              sx={{
+                mx: 1.25, my: 0.25, borderRadius: 2,
+                py: 0.875, px: 1.5, gap: 1.25,
+                bgcolor: active ? 'rgba(232,145,107,0.16)' : 'transparent',
+                color: active ? '#F5C4AE' : 'rgba(255,255,255,0.4)',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)' },
+                '&.Mui-selected': { bgcolor: 'rgba(232,145,107,0.16)', '&:hover': { bgcolor: 'rgba(232,145,107,0.22)' } },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, color: 'inherit', '& svg': { fontSize: 18 } }}>{icon}</ListItemIcon>
+              <ListItemText
+                primary={label}
+                primaryTypographyProps={{ fontSize: 13.5, fontWeight: active ? 600 : 400, color: 'inherit' }}
+              />
+            </ListItemButton>
+          );
+        })}
       </List>
 
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
-      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 0.875 }}>
+      <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mx: 1.5 }} />
+
+      {/* Bottom actions */}
+      <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
         <Box
           component="button"
           onClick={setShowNotifs}
           sx={{
-            width: '100%', py: '9px', borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.18)',
-            bgcolor: 'transparent', color: 'white',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1,
-            fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
-            '&:hover': { bgcolor: 'rgba(255,255,255,0.07)' },
+            display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.875,
+            borderRadius: 2, border: 'none',
+            bgcolor: 'transparent', color: 'rgba(255,255,255,0.4)',
+            cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit', fontSize: 13,
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)' },
           }}
         >
           <Badge badgeContent={alertCount} color="error">
-            <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
+            <NotificationsOutlinedIcon sx={{ fontSize: 17 }} />
           </Badge>
-          Alerts
+          <Typography component="span" sx={{ fontSize: 13.5, fontWeight: 400, color: 'inherit', fontFamily: 'inherit' }}>
+            Alerts
+          </Typography>
+          {alertCount > 0 && (
+            <Box sx={{ ml: 'auto', px: 0.875, py: '2px', borderRadius: 5, bgcolor: 'rgba(197,48,48,0.25)', fontSize: 11, color: '#FC8181' }}>
+              {alertCount}
+            </Box>
+          )}
         </Box>
+
         <Box
           component="button"
           onClick={setShowSettings}
           sx={{
-            width: '100%', py: '9px', borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.18)',
-            bgcolor: apiKey ? 'transparent' : 'rgba(184,92,56,0.3)',
-            color: apiKey ? 'rgba(255,255,255,0.5)' : '#F5C4AE',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75,
-            fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
-            '&:hover': { bgcolor: apiKey ? 'rgba(255,255,255,0.05)' : 'rgba(184,92,56,0.45)' },
+            display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.875,
+            borderRadius: 2, border: 'none',
+            bgcolor: apiKey ? 'transparent' : 'rgba(192,92,46,0.25)',
+            color: apiKey ? 'rgba(255,255,255,0.4)' : '#F5C4AE',
+            cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
+            '&:hover': { bgcolor: apiKey ? 'rgba(255,255,255,0.07)' : 'rgba(192,92,46,0.38)', color: apiKey ? 'rgba(255,255,255,0.85)' : '#F5C4AE' },
           }}
         >
-          <SettingsOutlinedIcon sx={{ fontSize: 16 }} />
-          {apiKey ? 'Settings' : 'Set AI Key'}
-        </Box>
-        <Box sx={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-          <FiberManualRecordIcon sx={{
-            fontSize: 7,
-            color: syncMsg === 'syncing' ? '#E8956A' : 'rgba(255,255,255,0.25)',
-          }} />
-          <Typography sx={{ fontSize: 11, opacity: 0.35, color: 'white' }}>
-            {syncMsg === 'syncing' ? 'Saving…' : 'Synced'}
+          <SettingsOutlinedIcon sx={{ fontSize: 17 }} />
+          <Typography component="span" sx={{ fontSize: 13.5, color: 'inherit', fontFamily: 'inherit' }}>
+            {apiKey ? 'Settings' : 'Set AI Key'}
           </Typography>
         </Box>
-        {tasks && (
-          <Typography sx={{ textAlign: 'center', fontSize: 11, opacity: 0.28, color: 'white' }}>
-            {tasks.filter(t => t.done).length}/{tasks.length} done
-          </Typography>
-        )}
+
+        {/* Sync + progress */}
+        <Box sx={{ px: 1.5, pt: 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.625 }}>
+            <Box sx={{
+              width: 6, height: 6, borderRadius: '50%',
+              bgcolor: syncMsg === 'syncing' ? '#E8916B' : 'rgba(255,255,255,0.2)',
+              transition: 'background 0.3s',
+            }} />
+            <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>
+              {syncMsg === 'syncing' ? 'Saving…' : 'Synced'}
+            </Typography>
+          </Box>
+          {tasks && (
+            <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,0.22)' }}>
+              {doneTasks}/{totalTasks}
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Box>
   );
@@ -135,7 +171,6 @@ function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setS
 
 export function Sidebar(props) {
   const { sidebarOpen, setSidebarOpen, isMobile } = props;
-
   return (
     <Drawer
       variant={isMobile ? 'temporary' : 'permanent'}
@@ -143,8 +178,7 @@ export function Sidebar(props) {
       onClose={() => setSidebarOpen(false)}
       ModalProps={{ keepMounted: true }}
       sx={{
-        width: DRAWER_WIDTH,
-        flexShrink: 0,
+        width: DRAWER_WIDTH, flexShrink: 0,
         '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', border: 'none' },
       }}
     >

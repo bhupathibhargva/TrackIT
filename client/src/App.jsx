@@ -234,7 +234,7 @@ export default function App() {
             ☰
           </Box>
         )}
-        {view === 'dashboard' && <Dashboard tasks={tasks} onToggle={toggleDone} onAdd={openAddModal} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={navigateTo} />}
+        {view === 'dashboard' && <Dashboard tasks={tasks} user={activeUser} onToggle={toggleDone} onAdd={openAddModal} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={navigateTo} />}
         {view === 'lists'     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={openEditModal} onAdd={openAddModal} />}
         {view === 'calendar'  && <CalView   tasks={tasks} onToggle={toggleDone} />}
         {view === 'ai'        && <AIView    log={aiLog} input={aiInput} setInput={setAiInput} onSend={sendChat} onSchedule={autoSchedule} loading={aiLoading} />}
