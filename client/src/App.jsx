@@ -224,20 +224,22 @@ export default function App() {
         tasks={tasks}
       />
 
-      <Box component="main" sx={{ flex: 1, overflow: 'auto', p: isMobile ? 2 : '32px 36px' }}>
-        {isMobile && (
-          <Box
-            component="button"
-            onClick={() => setSidebarOpen(open => !open)}
-            sx={{ mb: 2, bgcolor: '#27201A', border: 'none', borderRadius: 2, color: 'white', p: '8px 12px', fontSize: 18, cursor: 'pointer', lineHeight: 1 }}
-          >
-            ☰
-          </Box>
-        )}
-        {view === 'dashboard' && <Dashboard tasks={tasks} user={activeUser} onToggle={toggleDone} onAdd={openAddModal} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={navigateTo} />}
-        {view === 'lists'     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={openEditModal} onAdd={openAddModal} />}
-        {view === 'calendar'  && <CalView   tasks={tasks} onToggle={toggleDone} />}
-        {view === 'ai'        && <AIView    log={aiLog} input={aiInput} setInput={setAiInput} onSend={sendChat} onSchedule={autoSchedule} loading={aiLoading} />}
+      <Box component="main" sx={{ flex: 1, overflow: 'auto', p: isMobile ? '16px 16px' : '32px 40px' }}>
+        <Box sx={{ maxWidth: 1000, mx: 'auto' }}>
+          {isMobile && (
+            <Box
+              component="button"
+              onClick={() => setSidebarOpen(open => !open)}
+              sx={{ mb: 2.5, bgcolor: '#1E1511', border: 'none', borderRadius: 2, color: 'white', p: '8px 12px', fontSize: 18, cursor: 'pointer', lineHeight: 1 }}
+            >
+              ☰
+            </Box>
+          )}
+          {view === 'dashboard' && <Dashboard tasks={tasks} user={activeUser} onToggle={toggleDone} onAdd={openAddModal} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={navigateTo} />}
+          {view === 'lists'     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={openEditModal} onAdd={openAddModal} />}
+          {view === 'calendar'  && <CalView   tasks={tasks} onToggle={toggleDone} />}
+          {view === 'ai'        && <AIView    log={aiLog} input={aiInput} setInput={setAiInput} onSend={sendChat} onSchedule={autoSchedule} loading={aiLoading} />}
+        </Box>
       </Box>
 
       <NotifPanel tasks={tasks} onClose={() => setShowNotifs(false)} open={showNotifs} />

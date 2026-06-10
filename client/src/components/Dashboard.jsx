@@ -42,7 +42,7 @@ export function Dashboard({ tasks, user, onToggle, onAdd, onSchedule, onRepriori
   return (
     <Box>
       {/* Header */}
-      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }} sx={{ mb: 3.5, gap: 2 }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }} sx={{ mb: 3, gap: 2 }}>
         <Box>
           <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1C1917', lineHeight: 1, letterSpacing: '-0.02em' }}>
             {greeting()}{user ? `, ${user}` : ''}

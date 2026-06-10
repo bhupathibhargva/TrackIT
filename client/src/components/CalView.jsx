@@ -10,12 +10,12 @@ export function CalView({ tasks, onToggle }) {
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={3} flexWrap="wrap" gap={1.5}>
+      <Stack direction="row" justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'flex-end' }} mb={3} flexWrap="wrap" gap={2}>
         <Box>
-          <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1C1917', letterSpacing: '-0.02em' }}>
+          <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1C1917', letterSpacing: '-0.02em', lineHeight: 1 }}>
             This Week
           </Typography>
-          <Typography sx={{ color: '#78716C', fontSize: 13.5, mt: 0.5 }}>May 25 – 31, 2026</Typography>
+          <Typography sx={{ color: '#78716C', fontSize: 13.5, mt: 0.625 }}>May 25 – 31, 2026</Typography>
         </Box>
         <Button variant="outlined" startIcon={<FileDownloadIcon />} onClick={() => exportICS(tasks)}
           sx={{ borderColor: '#EAE4DC', color: 'primary.main', '&:hover': { borderColor: 'primary.main', bgcolor: '#FAE8DE' } }}>

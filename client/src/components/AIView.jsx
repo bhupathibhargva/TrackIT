@@ -15,9 +15,9 @@ export function AIView({ log, input, setInput, onSend, onSchedule, loading }) {
   useEffect(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), [log]);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', maxWidth: 700 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', maxWidth: 680 }}>
       {/* Header */}
-      <Box sx={{ mb: 2.5, flexShrink: 0 }}>
+      <Box sx={{ mb: 3, flexShrink: 0 }}>
         <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1C1917', letterSpacing: '-0.02em', mb: 0.5 }}>
           AI Assistant
         </Typography>
