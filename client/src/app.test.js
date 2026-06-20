@@ -3,15 +3,20 @@ import { WEEK, TODAY, uid, RECURRING_SEPARATOR } from "./constants.js";
 import { expandRecurring, exportICS } from "./utils.js";
 
 describe("WEEK", () => {
-  // Locked against Finding A — must hold regardless of the machine's timezone.
-  test("is May 25–31, 2026 in order", () => {
-    expect(WEEK).toEqual([
-      "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28",
-      "2026-05-29", "2026-05-30", "2026-05-31",
-    ]);
+  test("has 7 ISO dates", () => {
+    expect(WEEK).toHaveLength(7);
+    expect(WEEK.every(d => /^\d{4}-\d{2}-\d{2}$/.test(d))).toBe(true);
   });
-  test("TODAY is the first day of the week", () => {
-    expect(TODAY).toBe("2026-05-25");
+  test("starts on a Monday and runs Mon→Sun consecutively", () => {
+    expect(new Date(WEEK[0] + "T12:00:00").getDay()).toBe(1); // 1 = Monday
+    for (let i = 1; i < WEEK.length; i++) {
+      const prev = new Date(WEEK[i - 1] + "T12:00:00");
+      const curr = new Date(WEEK[i] + "T12:00:00");
+      expect((curr - prev) / 86400000).toBe(1);
+    }
+  });
+  test("TODAY falls within the current week", () => {
+    expect(WEEK).toContain(TODAY);
   });
 });
 

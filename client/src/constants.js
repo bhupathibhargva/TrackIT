@@ -7,14 +7,28 @@ export const CATS = {
   workout: { l: 'Workout',    e: '◎',  c: '#1A6868', b: '#E4F4F4' },
 };
 
-// Build week dates from UTC primitives so parsing and ISO formatting agree —
-// timezones behind UTC would otherwise shift the whole week by a day.
-export const WEEK = Array.from({ length: 7 }, (_, i) =>
-  new Date(Date.UTC(2026, 4, 25 + i)).toISOString().split('T')[0]
-);
+// Format a Date as a local YYYY-MM-DD string (not UTC) so the week and "today"
+// always match the user's own calendar day, whatever their timezone.
+const toISODate = (date) => {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().split('T')[0];
+};
+
+// The current week, Monday → Sunday, containing today. Recomputed at load.
+const _now     = new Date();
+const _mondayOffset = (_now.getDay() + 6) % 7;          // 0 = Monday … 6 = Sunday
+const _monday  = new Date(_now);
+_monday.setDate(_now.getDate() - _mondayOffset);
+_monday.setHours(0, 0, 0, 0);
+
+export const WEEK = Array.from({ length: 7 }, (_, i) => {
+  const day = new Date(_monday);
+  day.setDate(_monday.getDate() + i);
+  return toISODate(day);
+});
 
 export const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-export const TODAY = WEEK[0];
+export const TODAY = toISODate(_now);
 
 export const MOBILE_BREAKPOINT = 768;
 

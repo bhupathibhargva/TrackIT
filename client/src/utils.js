@@ -32,6 +32,18 @@ export function expandRecurring(tasks, weekDates) {
   return instances;
 }
 
+// "Jun 15 – 21, 2026", or "May 30 – Jun 5, 2026" when the week spans two months.
+export function weekRangeLabel(weekDates) {
+  const start = new Date(weekDates[0] + 'T12:00:00');
+  const end   = new Date(weekDates[weekDates.length - 1] + 'T12:00:00');
+  const month = (d) => d.toLocaleDateString('en-US', { month: 'short' });
+  const left  = `${month(start)} ${start.getDate()}`;
+  const right = start.getMonth() === end.getMonth()
+    ? `${end.getDate()}`
+    : `${month(end)} ${end.getDate()}`;
+  return `${left} – ${right}, ${end.getFullYear()}`;
+}
+
 // Escape RFC 5545 special chars so punctuation in titles/notes can't corrupt .ics output.
 const escICS = (value = '') =>
   String(value).replace(/\\/g, '\\\\').replace(/[,;]/g, '\\$&').replace(/\r?\n/g, '\\n');

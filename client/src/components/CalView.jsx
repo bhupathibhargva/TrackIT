@@ -1,7 +1,7 @@
 import { Box, Typography, Card, CardContent, Stack, Button } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { CATS, WEEK, DAY_NAMES } from '../constants.js';
-import { expandRecurring, exportICS } from '../utils.js';
+import { CATS, WEEK, TODAY, DAY_NAMES } from '../constants.js';
+import { expandRecurring, exportICS, weekRangeLabel } from '../utils.js';
 import { Dot } from './Pill.jsx';
 
 export function CalView({ tasks, onToggle }) {
@@ -15,7 +15,7 @@ export function CalView({ tasks, onToggle }) {
           <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#1C1917', letterSpacing: '-0.02em', lineHeight: 1 }}>
             This Week
           </Typography>
-          <Typography sx={{ color: '#78716C', fontSize: 13.5, mt: 0.625 }}>May 25 – 31, 2026</Typography>
+          <Typography sx={{ color: '#78716C', fontSize: 13.5, mt: 0.625 }}>{weekRangeLabel(WEEK)}</Typography>
         </Box>
         <Button variant="outlined" startIcon={<FileDownloadIcon />} onClick={() => exportICS(tasks)}
           sx={{ borderColor: '#EAE4DC', color: 'primary.main', '&:hover': { borderColor: 'primary.main', bgcolor: '#FAE8DE' } }}>
@@ -28,7 +28,7 @@ export function CalView({ tasks, onToggle }) {
           {WEEK.map((date, i) => {
             const dayTasks = expanded.filter(t => t.scheduledDate === date)
               .sort((a, b) => a.priority - b.priority || (a.scheduledTime || '').localeCompare(b.scheduledTime || ''));
-            const isToday = i === 0;
+            const isToday = date === TODAY;
             return (
               <Card key={date} sx={{
                 minHeight: 190, borderRadius: '12px !important',

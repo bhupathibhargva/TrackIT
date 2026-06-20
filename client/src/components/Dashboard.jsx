@@ -15,6 +15,10 @@ function greeting() {
 
 const PRIORITY_COLORS = ['', '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#9AA0AA'];
 
+const todayLabel = new Date(TODAY + 'T12:00:00').toLocaleDateString('en-GB', {
+  weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+});
+
 export function Dashboard({ tasks, user, onToggle, onAdd, onSchedule, onReprioritize, loading, setView }) {
   const expanded = expandRecurring(tasks, WEEK);
   const overdue  = tasks.filter(task => !task.done && task.dueDate && task.dueDate < TODAY);
@@ -48,7 +52,7 @@ export function Dashboard({ tasks, user, onToggle, onAdd, onSchedule, onRepriori
             {greeting()}{user ? `, ${user}` : ''}
           </Typography>
           <Typography sx={{ color: '#78716C', mt: 0.625, fontSize: 13.5 }}>
-            Mon, 25 May 2026 · {tasks.filter(t => !t.done).length} tasks remaining · {completionPct}% done
+            {todayLabel} · {tasks.filter(t => !t.done).length} tasks remaining · {completionPct}% done
           </Typography>
         </Box>
         <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
