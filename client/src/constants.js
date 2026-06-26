@@ -41,6 +41,18 @@ export const STORAGE_KEYS = {
   apiKey: 'hq-apikey',
 };
 
+export const MEMBERS = ['Bhargav', 'Rupa'];
+
+export const PRIORITY_COLORS = ['', '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#9AA0AA'];
+export const PRIORITY_LABELS = ['', 'Critical', 'High', 'Medium', 'Low', 'Someday'];
+
+// Bento grid helpers shared across Dashboard and ListView
+export const BENTO_COLS = { xs: 'repeat(2, 1fr)', md: 'repeat(12, 1fr)' };
+export const BENTO_FULL = { xs: 'span 2', md: 'span 12' };
+export const BENTO_HALF = { xs: 'span 2', md: 'span 6' };
+
+export const POLL_INTERVAL_MS = 30_000;
+
 export function uid() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
   return Math.random().toString(36).slice(2, 9);

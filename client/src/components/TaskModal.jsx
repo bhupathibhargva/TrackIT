@@ -5,7 +5,7 @@ import {
   Button, Box, IconButton, Stack,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { CATS, WEEK } from '../constants.js';
+import { CATS, WEEK, MEMBERS } from '../constants.js';
 
 const BLANK_TASK = {
   title: '', category: 'tasks', priority: 3, assignee: 'Both', dueDate: '',
@@ -51,7 +51,7 @@ export function TaskModal({ task: initialTask, onSave, onClose }) {
             <FormControl fullWidth size="small">
               <InputLabel>Assignee</InputLabel>
               <Select label="Assignee" value={form.assignee} onChange={e => setField('assignee', e.target.value)}>
-                {['Bhargav', 'Rupa', 'Both'].map(name => (
+                {[...MEMBERS, 'Both'].map(name => (
                   <MenuItem key={name} value={name}>{name}</MenuItem>
                 ))}
               </Select>
@@ -133,7 +133,7 @@ export function TaskModal({ task: initialTask, onSave, onClose }) {
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} variant="outlined" sx={{ borderColor: '#E4DDD3', color: '#5C4A3A' }}>
+        <Button onClick={onClose} variant="outlined" sx={{ borderColor: '#EAE4DC', color: '#5C4A3A' }}>
           Cancel
         </Button>
         <Button

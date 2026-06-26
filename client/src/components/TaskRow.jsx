@@ -4,9 +4,8 @@ import ArrowUpwardIcon    from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon  from '@mui/icons-material/ArrowDownward';
 import EditOutlinedIcon   from '@mui/icons-material/EditOutlined';
 import DeleteOutlineIcon  from '@mui/icons-material/DeleteOutlined';
+import { PRIORITY_COLORS } from '../constants.js';
 import { Pill } from './Pill.jsx';
-
-const PRIORITY_COLORS = ['', '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#9AA0AA'];
 
 export function TaskRow({ task, onToggle, onDelete, onMove, onEdit }) {
   const [hover, setHover] = useState(false);

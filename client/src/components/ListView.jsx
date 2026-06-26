@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import { Box, Typography, Card, CardContent, Button, Stack, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { CATS } from '../constants.js';
+import { CATS, MEMBERS, BENTO_COLS, BENTO_FULL, BENTO_HALF } from '../constants.js';
 import { TaskRow } from './TaskRow.jsx';
 
-const ASSIGNEES = [['all', 'Everyone'], ['Bhargav', 'Bhargav'], ['Rupa', 'Rupa']];
-const BENTO = { xs: 'repeat(2, 1fr)', md: 'repeat(12, 1fr)' };
-const FULL  = { xs: 'span 2', md: 'span 12' };
-const HALF  = { xs: 'span 2', md: 'span 6' };
+const ASSIGNEES = [['all', 'Everyone'], ...MEMBERS.map(m => [m, m])];
 
 export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -25,7 +22,7 @@ export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
   const completedCount = tasks.filter(t => t.done).length;
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: BENTO, gap: '14px', alignItems: 'start' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: BENTO_COLS, gap: '14px', alignItems: 'start' }}>
 
       {/* ── TITLE CARD ── */}
       <Card sx={{ gridColumn: { xs: 'span 2', md: 'span 9' } }}>
@@ -64,7 +61,7 @@ export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
       </Box>
 
       {/* ── CATEGORY FILTER CARD ── */}
-      <Card sx={{ gridColumn: HALF }}>
+      <Card sx={{ gridColumn: BENTO_HALF }}>
         <CardContent sx={{ p: '14px 18px !important' }}>
           <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#A8A29E', textTransform: 'uppercase', letterSpacing: '0.07em', mb: 1 }}>
             Category
@@ -86,7 +83,7 @@ export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
       </Card>
 
       {/* ── ASSIGNEE FILTER CARD ── */}
-      <Card sx={{ gridColumn: HALF }}>
+      <Card sx={{ gridColumn: BENTO_HALF }}>
         <CardContent sx={{ p: '14px 18px !important' }}>
           <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#A8A29E', textTransform: 'uppercase', letterSpacing: '0.07em', mb: 1 }}>
             Assigned to
@@ -108,7 +105,7 @@ export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
       </Card>
 
       {/* ── TASK LIST CARD ── */}
-      <Card sx={{ gridColumn: FULL }}>
+      <Card sx={{ gridColumn: BENTO_FULL }}>
         <CardContent sx={{ p: '14px 16px !important' }}>
           {filtered.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 5 }}>
@@ -128,7 +125,7 @@ export function ListView({ tasks, onToggle, onDelete, onMove, onEdit, onAdd }) {
 
       {/* ── SHOW COMPLETED ── */}
       {completedCount > 0 && (
-        <Box sx={{ gridColumn: FULL }}>
+        <Box sx={{ gridColumn: BENTO_FULL }}>
           <Button
             onClick={() => setShowCompleted(s => !s)}
             sx={{ color: '#78716C', fontSize: 13, textDecoration: 'underline', textTransform: 'none', p: 0, '&:hover': { bgcolor: 'transparent', color: '#1C1917' } }}

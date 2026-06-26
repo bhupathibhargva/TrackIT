@@ -2,11 +2,9 @@ import { Box, Typography, Card, CardContent, LinearProgress, Button, Stack, Aler
 import AddIcon         from '@mui/icons-material/Add';
 import AutorenewIcon   from '@mui/icons-material/Autorenew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { CATS, WEEK, TODAY } from '../constants.js';
+import { CATS, WEEK, TODAY, PRIORITY_COLORS, BENTO_COLS, BENTO_FULL } from '../constants.js';
 import { expandRecurring } from '../utils.js';
 import { Pill } from './Pill.jsx';
-
-const PRIORITY_COLORS = ['', '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#9AA0AA'];
 
 function greeting() {
   const h = new Date().getHours();
@@ -47,10 +45,10 @@ export function Dashboard({ tasks, user, onToggle, onAdd, onSchedule, onRepriori
   ];
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: BENTO, gap: '14px', alignItems: 'start' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: BENTO_COLS, gap: '14px', alignItems: 'start' }}>
 
       {/* ── GREETING HERO ── */}
-      <Card sx={{ gridColumn: FULL }}>
+      <Card sx={{ gridColumn: BENTO_FULL }}>
         <CardContent sx={{ p: '22px 24px !important' }}>
           <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between"
             alignItems={{ xs: 'stretch', sm: 'flex-start' }} gap={2}>
@@ -88,7 +86,7 @@ export function Dashboard({ tasks, user, onToggle, onAdd, onSchedule, onRepriori
       {overdue.length > 0 && (
         <Alert severity="warning"
           action={<Button size="small" color="inherit" onClick={onReprioritize}>Fix</Button>}
-          sx={{ gridColumn: FULL, borderRadius: '14px !important' }}>
+          sx={{ gridColumn: BENTO_FULL, borderRadius: '14px !important' }}>
           <strong>{overdue.length} overdue:</strong>{' '}
           {overdue.map(t => t.title).slice(0, 3).join(', ')}{overdue.length > 3 ? '…' : ''}
         </Alert>
@@ -182,7 +180,7 @@ export function Dashboard({ tasks, user, onToggle, onAdd, onSchedule, onRepriori
 
       {/* ── COMING UP (full-width bento row of mini tiles) ── */}
       {upcoming.length > 0 && (
-        <Card sx={{ gridColumn: FULL }}>
+        <Card sx={{ gridColumn: BENTO_FULL }}>
           <CardContent sx={{ p: '20px 22px !important' }}>
             <Typography sx={{ fontSize: 15, fontWeight: 600, color: '#1C1917', mb: 1.75 }}>Coming Up</Typography>
             <Box sx={{

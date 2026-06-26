@@ -20,11 +20,11 @@ function AlertSection({ label, items, type }) {
       <Stack spacing={0.75}>
         {items.map(task => (
           <Box key={task.id} sx={{ bgcolor: style.bg, border: `1px solid ${style.border}`, borderRadius: 2, p: '8px 10px' }}>
-            <Typography sx={{ fontSize: 13, color: '#25221F', fontWeight: 500 }}>{task.title}</Typography>
+            <Typography sx={{ fontSize: 13, color: '#1C1917', fontWeight: 500 }}>{task.title}</Typography>
             <Stack direction="row" spacing={0.75} mt={0.375} alignItems="center" flexWrap="wrap">
               <Pill cat={task.category} small />
-              <Typography sx={{ fontSize: 11, color: '#706A63' }}>{task.assignee}</Typography>
-              {task.dueDate && <Typography sx={{ fontSize: 11, color: '#C05621' }}>Due {task.dueDate}</Typography>}
+              <Typography sx={{ fontSize: 11, color: '#78716C' }}>{task.assignee}</Typography>
+              {task.dueDate && <Typography sx={{ fontSize: 11, color: '#C05C2E' }}>Due {task.dueDate}</Typography>}
             </Stack>
           </Box>
         ))}
@@ -50,7 +50,7 @@ export function NotifPanel({ tasks, onClose, open }) {
         <AlertSection label="Today"     items={today}    type="warning" />
         <AlertSection label="This Week" items={upcoming} type="success" />
         {!hasAlerts && (
-          <Box sx={{ textAlign: 'center', py: 6, color: '#706A63' }}>
+          <Box sx={{ textAlign: 'center', py: 6, color: '#78716C' }}>
             <Typography>All clear! ✓</Typography>
           </Box>
         )}

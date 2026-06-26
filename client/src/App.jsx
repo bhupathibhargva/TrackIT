@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
-import { CATS, WEEK, TODAY, uid, MOBILE_BREAKPOINT, RECURRING_SEPARATOR } from './constants.js';
+import { CATS, TODAY, uid, MOBILE_BREAKPOINT, RECURRING_SEPARATOR, POLL_INTERVAL_MS } from './constants.js';
 import { loadData, persistData, loadUser, saveUser, loadApiKey, saveApiKey } from './storage.js';
 import { supabase } from './supabase.js';
 import { reqNotif, pushNotif } from './utils.js';
@@ -44,7 +44,7 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Poll Supabase every 30 s so Siri-added tasks appear without a refresh
+  // Poll Supabase so Siri-added tasks appear without a manual refresh
   useEffect(() => {
     if (!supabase) return;
     const poll = setInterval(async () => {
@@ -53,7 +53,7 @@ export default function App() {
         const prevIds = new Set(prev.map(t => t.id));
         return fresh.some(t => !prevIds.has(t.id)) ? fresh : prev;
       });
-    }, 30_000);
+    }, POLL_INTERVAL_MS);
     return () => clearInterval(poll);
   }, []);
 
@@ -114,20 +114,19 @@ export default function App() {
     await saveUser(userName);
   };
 
-  const openSettings = () => { setSidebarOpen(false); setShowSettings(true); };
-  const openNotifs   = () => { setSidebarOpen(false); setShowNotifs(true); };
-  const openAddModal = () => { setSidebarOpen(false); setShowAddModal(true); };
-  const openEditModal = (task) => { setSidebarOpen(false); setEditingTask(task); };
-  const navigateTo = (destination) => { setSidebarOpen(false); setView(destination); };
-
-  // ── AI actions ──────────────────────────────────────────────────────────────
+  const closeDrawerAnd = (fn) => (...args) => { setSidebarOpen(false); fn(...args); };
+  const openSettings  = closeDrawerAnd(() => setShowSettings(true));
+  const openNotifs    = closeDrawerAnd(() => setShowNotifs(true));
+  const openAddModal  = closeDrawerAnd(() => setShowAddModal(true));
+  const openEditModal = closeDrawerAnd(setEditingTask);
+  const navigateTo    = closeDrawerAnd(setView);
 
   const requireApiKey = () => {
     if (!apiKey) { openSettings(); return false; }
     return true;
   };
 
-  const appendAiMessage = (text) => setAiLog(log => [...log, { role: 'ai', text }]);
+  const appendAiMessage = (text) => setAiLog(log => [...log, { role: 'assistant', text }]);
 
   const autoSchedule = async () => {
     if (!requireApiKey()) return;

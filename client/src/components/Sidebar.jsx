@@ -8,6 +8,7 @@ import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined
 import AutoAwesomeIcon           from '@mui/icons-material/AutoAwesome';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import SettingsOutlinedIcon      from '@mui/icons-material/SettingsOutlined';
+import { MEMBERS } from '../constants.js';
 
 const DRAWER_WIDTH = 232;
 
@@ -18,7 +19,6 @@ const NAV_ITEMS = [
   { view: 'ai',        icon: <AutoAwesomeIcon />,           label: 'AI Assistant' },
 ];
 
-const ASSIGNEES = ['Bhargav', 'Rupa'];
 
 function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setSidebarOpen, setShowNotifs, setShowSettings, switchUser, isMobile, tasks }) {
   const doneTasks  = tasks ? tasks.filter(t => t.done).length : 0;
@@ -37,7 +37,7 @@ function SidebarContent({ user, view, setView, apiKey, alertCount, syncMsg, setS
 
         {/* Avatar user switcher */}
         <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-          {ASSIGNEES.map(name => {
+          {MEMBERS.map(name => {
             const active = user === name;
             return (
               <Box

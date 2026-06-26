@@ -1,5 +1,5 @@
-import { Box, Typography } from '@mui/material';
-import { CATS } from '../constants.js';
+import { Box } from '@mui/material';
+import { CATS, PRIORITY_COLORS, PRIORITY_LABELS } from '../constants.js';
 
 export function Pill({ cat, small }) {
   const category = CATS[cat] ?? CATS.tasks;
@@ -15,25 +15,11 @@ export function Pill({ cat, small }) {
   );
 }
 
-const PRIORITY_COLORS = ['', '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#9AA0AA'];
-const PRIORITY_LABELS = ['', 'Critical', 'High', 'Medium', 'Low', 'Someday'];
-
 export function Dot({ p: priority }) {
   return (
     <Box title={PRIORITY_LABELS[priority]} sx={{
       width: 8, height: 8, borderRadius: '50%',
       bgcolor: PRIORITY_COLORS[priority] ?? '#ccc', flexShrink: 0, display: 'inline-block',
     }} />
-  );
-}
-
-export function Field({ label, children }) {
-  return (
-    <Box>
-      <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#706A63', mb: 0.5, display: 'block' }}>
-        {label}
-      </Typography>
-      {children}
-    </Box>
   );
 }
