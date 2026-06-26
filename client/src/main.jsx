@@ -32,7 +32,7 @@ const theme = createTheme({
       defaultProps: { elevation: 0 },
       styleOverrides: {
         root: {
-          borderRadius: 14,
+          borderRadius: 16,
           border: '1px solid #EAE4DC',
           boxShadow: '0 1px 4px rgba(28,25,23,0.06)',
           backgroundColor: '#FDFAF6',

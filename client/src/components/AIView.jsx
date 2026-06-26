@@ -56,14 +56,15 @@ export function AIView({ log, input, setInput, onSend, onSchedule, loading }) {
               <Typography sx={{ fontSize: 13, color: '#A8A29E', mb: 2.5, textAlign: 'center' }}>
                 Try one of these to get started
               </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, width: '100%', maxWidth: 560 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', width: '100%', maxWidth: 560 }}>
                 {SUGGESTIONS.map((s, i) => (
                   <Button key={i} variant="outlined" onClick={() => setInput(s)} sx={{
                     fontSize: 12, color: '#5C4A3A', textAlign: 'left',
-                    borderColor: '#EAE4DC', bgcolor: '#F7F2EC',
+                    border: '1.5px solid #EAE4DC', bgcolor: '#F7F2EC',
                     textTransform: 'none', justifyContent: 'flex-start', alignItems: 'flex-start',
-                    p: '10px 12px', lineHeight: 1.45, borderRadius: 2,
-                    '&:hover': { bgcolor: '#EDE3D8', borderColor: '#C05C2E' },
+                    p: '12px 14px', lineHeight: 1.5, borderRadius: '12px',
+                    transition: 'all 0.15s',
+                    '&:hover': { bgcolor: '#EDE3D8', borderColor: '#C05C2E', border: '1.5px solid', transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(192,92,46,0.12)' },
                   }}>
                     "{s}"
                   </Button>

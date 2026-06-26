@@ -225,7 +225,7 @@ export default function App() {
       />
 
       <Box component="main" sx={{ flex: 1, overflow: 'auto', p: isMobile ? '16px 16px' : '32px 40px' }}>
-        <Box sx={{ maxWidth: 1000, mx: 'auto' }}>
+        <Box sx={{ maxWidth: 1060, mx: 'auto' }}>
           {isMobile && (
             <Box
               component="button"

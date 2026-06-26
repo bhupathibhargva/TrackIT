@@ -24,14 +24,14 @@ export function CalView({ tasks, onToggle }) {
       </Stack>
 
       <Box sx={{ overflowX: 'auto', mb: 3, mx: { xs: -2, sm: 0 }, px: { xs: 2, sm: 0 } }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(120px, 1fr))', gap: 1.5, minWidth: { xs: '840px', lg: 'unset' } }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(120px, 1fr))', gap: '14px', minWidth: { xs: '840px', lg: 'unset' } }}>
           {WEEK.map((date, i) => {
             const dayTasks = expanded.filter(t => t.scheduledDate === date)
               .sort((a, b) => a.priority - b.priority || (a.scheduledTime || '').localeCompare(b.scheduledTime || ''));
             const isToday = date === TODAY;
             return (
               <Card key={date} sx={{
-                minHeight: 190, borderRadius: '12px !important',
+                minHeight: 190,
                 border: `1px solid ${isToday ? 'rgba(192,92,46,0.35)' : '#EAE4DC'} !important`,
                 boxShadow: isToday ? '0 2px 12px rgba(192,92,46,0.1) !important' : undefined,
               }}>
