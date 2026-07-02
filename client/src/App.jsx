@@ -1,11 +1,14 @@
+// App — the root component. It wires together three concerns:
+//   1. Task data     → useTasks()  (load, save, toggle, delete, reorder)
+//   2. AI assistant  → useAi()     (chat, auto-schedule, reprioritize)
+//   3. UI shell      → which view is showing, which modals/drawers are open
 import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
-import { CATS, TODAY, uid, MOBILE_BREAKPOINT, RECURRING_SEPARATOR, POLL_INTERVAL_MS } from './constants.js';
-import { loadData, persistData, loadUser, saveUser, loadApiKey, saveApiKey } from './storage.js';
-import { supabase } from './supabase.js';
-import { reqNotif, pushNotif } from './utils.js';
-import { callGemini } from './gemini.js';
-import { schedulePrompt, reprioritizePrompt, chatPrompt } from './prompts.js';
+import { TODAY, MOBILE_BREAKPOINT, MEMBERS } from './constants.js';
+import { loadUser, saveUser, loadApiKey, saveApiKey } from './storage.js';
+import { reqNotif } from './utils.js';
+import { useTasks } from './hooks/useTasks.js';
+import { useAi } from './hooks/useAi.js';
 import { Sidebar }       from './components/Sidebar.jsx';
 import { Dashboard }     from './components/Dashboard.jsx';
 import { ListView }      from './components/ListView.jsx';
@@ -16,104 +19,23 @@ import { SettingsModal } from './components/SettingsModal.jsx';
 import { NotifPanel }    from './components/NotifPanel.jsx';
 
 export default function App() {
-  const [tasks, setTasks]               = useState([]);
+  // ---- UI shell state ----
   const [view, setView]                 = useState('dashboard');
-  const [activeUser, setActiveUser]     = useState('Bhargav');
+  const [activeUser, setActiveUser]     = useState(MEMBERS[0]);
+  const [apiKey, setApiKey]             = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingTask, setEditingTask]   = useState(null);
+  const [editingTask, setEditingTask]   = useState(null); // task being edited, or null
   const [showNotifs, setShowNotifs]     = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [sidebarOpen, setSidebarOpen]   = useState(false);
+  const [sidebarOpen, setSidebarOpen]   = useState(false); // mobile drawer only
   const [isMobile, setIsMobile]         = useState(() => window.innerWidth < MOBILE_BREAKPOINT);
-  const [apiKey, setApiKey]             = useState('');
-  const [aiLog, setAiLog]               = useState([]);
-  const [aiInput, setAiInput]           = useState('');
-  const [aiLoading, setAiLoading]       = useState(false);
-  const [syncMsg, setSyncMsg]           = useState('synced');
 
-  useEffect(() => {
-    loadData().then(({ tasks: saved }) => setTasks(saved));
-    loadUser().then(setActiveUser);
-    setApiKey(loadApiKey());
-    reqNotif();
-  }, []);
+  // ---- Task data (see hooks/useTasks.js) ----
+  const { tasks, syncMsg, persist, toggleDone, deleteTask, saveTask, movePriority } = useTasks();
 
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  // Poll Supabase so Siri-added tasks appear without a manual refresh
-  useEffect(() => {
-    if (!supabase) return;
-    const poll = setInterval(async () => {
-      const { tasks: fresh } = await loadData();
-      setTasks(prev => {
-        const prevIds = new Set(prev.map(t => t.id));
-        return fresh.some(t => !prevIds.has(t.id)) ? fresh : prev;
-      });
-    }, POLL_INTERVAL_MS);
-    return () => clearInterval(poll);
-  }, []);
-
-  const persist = async (updated) => {
-    setTasks(updated);
-    setSyncMsg('syncing');
-    await persistData(updated);
-    setSyncMsg('synced');
-  };
-
-  const toggleDone = (id) => {
-    if (id.includes(RECURRING_SEPARATOR)) {
-      const [taskId, date] = id.split(RECURRING_SEPARATOR);
-      persist(tasks.map(task => {
-        if (task.id !== taskId) return task;
-        const completed = task.completedDates ?? [];
-        const alreadyDone = completed.includes(date);
-        return {
-          ...task,
-          completedDates: alreadyDone
-            ? completed.filter(d => d !== date)
-            : [...completed, date],
-        };
-      }));
-    } else {
-      persist(tasks.map(task => task.id === id ? { ...task, done: !task.done } : task));
-    }
-  };
-
-  const deleteTask = (id) => persist(tasks.filter(task => task.id !== id));
-
-  const saveTask = (task) => {
-    if (task.id && tasks.find(t => t.id === task.id)) {
-      persist(tasks.map(t => t.id === task.id ? task : t));
-    } else {
-      persist([...tasks, { ...task, id: uid() }]);
-    }
-    setShowAddModal(false);
-    setEditingTask(null);
-  };
-
-  const movePriority = (id, direction) => {
-    const sorted = [...tasks].sort((a, b) => a.priority - b.priority || a.id.localeCompare(b.id));
-    const index = sorted.findIndex(task => task.id === id);
-    const swapIndex = direction === 'up' ? index - 1 : index + 1;
-    if (swapIndex < 0 || swapIndex >= sorted.length) return;
-    const currentPriority = sorted[index].priority;
-    const swapPriority = sorted[swapIndex].priority;
-    persist(tasks.map(task => {
-      if (task.id === sorted[index].id)    return { ...task, priority: swapPriority };
-      if (task.id === sorted[swapIndex].id) return { ...task, priority: currentPriority };
-      return task;
-    }));
-  };
-
-  const switchUser = async (userName) => {
-    setActiveUser(userName);
-    await saveUser(userName);
-  };
-
+  // On mobile the sidebar is a temporary drawer, so every action launched
+  // from it should also close it. Wrapping handlers in closeDrawerAnd keeps
+  // that rule in one place.
   const closeDrawerAnd = (fn) => (...args) => { setSidebarOpen(false); fn(...args); };
   const openSettings  = closeDrawerAnd(() => setShowSettings(true));
   const openNotifs    = closeDrawerAnd(() => setShowNotifs(true));
@@ -121,86 +43,37 @@ export default function App() {
   const openEditModal = closeDrawerAnd(setEditingTask);
   const navigateTo    = closeDrawerAnd(setView);
 
-  const requireApiKey = () => {
-    if (!apiKey) { openSettings(); return false; }
-    return true;
+  // ---- AI assistant (see hooks/useAi.js) ----
+  const ai = useAi({ tasks, persist, apiKey, activeUser, setView, onMissingKey: openSettings });
+
+  // One-time startup: restore the active user + API key, ask for browser
+  // notification permission.
+  useEffect(() => {
+    loadUser().then(setActiveUser);
+    setApiKey(loadApiKey());
+    reqNotif();
+  }, []);
+
+  // Track window size so we can swap between the fixed and drawer sidebar.
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const switchUser = async (userName) => {
+    setActiveUser(userName);
+    await saveUser(userName);
   };
 
-  const appendAiMessage = (text) => setAiLog(log => [...log, { role: 'assistant', text }]);
-
-  const autoSchedule = async () => {
-    if (!requireApiKey()) return;
-    setAiLoading(true);
-    try {
-      const schedulable = tasks.filter(task => !task.done && !task.recurrence);
-      const schedule = await callGemini(apiKey, schedulePrompt(schedulable));
-      const updated = tasks.map(task => {
-        const slot = schedule.find(s => s.id === task.id);
-        return slot ? { ...task, scheduledDate: slot.scheduledDate, scheduledTime: slot.scheduledTime } : task;
-      });
-      await persist(updated);
-      pushNotif('Family HQ', `Week scheduled! ${schedule.length} tasks placed.`);
-      appendAiMessage(`Scheduled ${schedule.length} tasks for the week!`);
-      setView('calendar');
-    } catch {
-      appendAiMessage('Scheduling failed. Try again.');
-    }
-    setAiLoading(false);
+  const handleSaveTask = (task) => {
+    saveTask(task);
+    setShowAddModal(false);
+    setEditingTask(null);
   };
 
-  const autoReprioritize = async () => {
-    if (!requireApiKey()) return;
-    setAiLoading(true);
-    const overdue = tasks.filter(task => !task.done && task.dueDate && task.dueDate < TODAY);
-    if (!overdue.length) {
-      appendAiMessage("No overdue tasks — you're on top of it! 🎉");
-      setView('ai');
-      setAiLoading(false);
-      return;
-    }
-    try {
-      const updates = await callGemini(apiKey, reprioritizePrompt(overdue));
-      const updated = tasks.map(task => {
-        const change = updates.find(u => u.id === task.id);
-        return change ? { ...task, ...change } : task;
-      });
-      await persist(updated);
-      appendAiMessage(`Reprioritized and rescheduled ${updates.length} overdue tasks.`);
-      setView('ai');
-    } catch {
-      appendAiMessage('Reprioritization failed.');
-    }
-    setAiLoading(false);
-  };
-
-  const sendChat = async () => {
-    const message = aiInput.trim();
-    if (!message || !requireApiKey()) return;
-    setAiInput('');
-    setAiLog(log => [...log, { role: 'user', text: message }]);
-    setAiLoading(true);
-    try {
-      const result = await callGemini(apiKey, chatPrompt(tasks, activeUser, message));
-      if (result.action === 'add') {
-        const newTask = { ...result.task, id: uid() };
-        await persist([...tasks, newTask]);
-        appendAiMessage(`Added "${newTask.title}" to ${CATS[newTask.category]?.l ?? newTask.category}.${newTask.recurrence ? ` Repeats ${newTask.recurrence}.` : ''}`);
-      } else if (result.action === 'update') {
-        await persist(tasks.map(task => task.id === result.id ? { ...task, ...result.changes } : task));
-        appendAiMessage(`Updated "${tasks.find(task => task.id === result.id)?.title ?? 'task'}".`);
-      } else if (result.action === 'delete') {
-        const title = tasks.find(task => task.id === result.id)?.title;
-        await persist(tasks.filter(task => task.id !== result.id));
-        appendAiMessage(`Removed "${title}".`);
-      } else {
-        appendAiMessage(result.message ?? 'Done!');
-      }
-    } catch {
-      appendAiMessage('Something went wrong.');
-    }
-    setAiLoading(false);
-  };
-
+  // Badge count for the sidebar: anything due today (or earlier) plus
+  // anything scheduled for today.
   const alertCount = tasks.filter(
     task => !task.done && ((task.dueDate && task.dueDate <= TODAY) || task.scheduledDate === TODAY)
   ).length;
@@ -234,17 +107,17 @@ export default function App() {
               ☰
             </Box>
           )}
-          {view === 'dashboard' && <Dashboard tasks={tasks} user={activeUser} onToggle={toggleDone} onAdd={openAddModal} onSchedule={autoSchedule} onReprioritize={autoReprioritize} loading={aiLoading} setView={navigateTo} />}
+          {view === 'dashboard' && <Dashboard tasks={tasks} user={activeUser} onToggle={toggleDone} onAdd={openAddModal} onSchedule={ai.autoSchedule} onReprioritize={ai.autoReprioritize} loading={ai.loading} setView={navigateTo} />}
           {view === 'lists'     && <ListView  tasks={tasks} onToggle={toggleDone} onDelete={deleteTask} onMove={movePriority} onEdit={openEditModal} onAdd={openAddModal} />}
           {view === 'calendar'  && <CalView   tasks={tasks} onToggle={toggleDone} />}
-          {view === 'ai'        && <AIView    log={aiLog} input={aiInput} setInput={setAiInput} onSend={sendChat} onSchedule={autoSchedule} loading={aiLoading} />}
+          {view === 'ai'        && <AIView    log={ai.log} input={ai.input} setInput={ai.setInput} onSend={ai.sendChat} onSchedule={ai.autoSchedule} loading={ai.loading} />}
         </Box>
       </Box>
 
       <NotifPanel tasks={tasks} onClose={() => setShowNotifs(false)} open={showNotifs} />
 
       {(showAddModal || editingTask) && (
-        <TaskModal task={editingTask} onSave={saveTask} onClose={() => { setShowAddModal(false); setEditingTask(null); }} />
+        <TaskModal task={editingTask} onSave={handleSaveTask} onClose={() => { setShowAddModal(false); setEditingTask(null); }} />
       )}
       {showSettings && (
         <SettingsModal

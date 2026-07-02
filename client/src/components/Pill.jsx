@@ -1,3 +1,4 @@
+// Tiny reusable badges: Pill shows a task's category, Dot its priority.
 import { Box } from '@mui/material';
 import { CATS, PRIORITY_COLORS, PRIORITY_LABELS } from '../constants.js';
 

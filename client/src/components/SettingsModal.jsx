@@ -1,3 +1,5 @@
+// SettingsModal — manages the Gemini API key (view masked, replace, delete).
+// The key lives only in this browser's localStorage; see storage.js.
 import { useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,

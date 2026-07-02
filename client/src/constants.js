@@ -1,3 +1,9 @@
+// constants.js — every shared value in one place: category definitions,
+// date helpers (WEEK / TODAY), design tokens, and layout helpers.
+// If a value is used by more than one file, it belongs here.
+
+// Task categories. Each has a label (l), emoji (e), text colour (c) and
+// background colour (b) used by the Pill component and the calendar.
 export const CATS = {
   tasks:   { l: 'Tasks',      e: '✓',  c: '#2A4A1E', b: '#EEF4EB' },
   grocery: { l: 'Grocery',    e: '🛒', c: '#7A5C14', b: '#FBF5E6' },
@@ -41,12 +47,16 @@ export const STORAGE_KEYS = {
   apiKey: 'hq-apikey',
 };
 
+// The people tasks can be assigned to. UI also offers "Both".
 export const MEMBERS = ['Bhargav', 'Rupa'];
 
+// Priorities are 1-based (1 = Critical … 5 = Someday), so index 0 is a blank
+// placeholder — PRIORITY_COLORS[task.priority] just works without any -1 math.
 export const PRIORITY_COLORS = ['', '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#9AA0AA'];
 export const PRIORITY_LABELS = ['', 'Critical', 'High', 'Medium', 'Low', 'Someday'];
 
-// Bento grid helpers shared across Dashboard and ListView
+// Bento grid helpers shared across Dashboard and ListView:
+// a 12-column grid on desktop that collapses to 2 columns on mobile.
 export const BENTO_COLS = { xs: 'repeat(2, 1fr)', md: 'repeat(12, 1fr)' };
 export const BENTO_FULL = { xs: 'span 2', md: 'span 12' };
 export const BENTO_HALF = { xs: 'span 2', md: 'span 6' };

@@ -1,3 +1,5 @@
+// TaskRow — one task in the All Tasks list: checkbox, title, meta line,
+// and hover-only action buttons (reorder / edit / delete).
 import { useState } from 'react';
 import { Box, Checkbox, Typography, IconButton, Tooltip, Stack } from '@mui/material';
 import ArrowUpwardIcon    from '@mui/icons-material/ArrowUpward';

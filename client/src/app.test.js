@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { WEEK, TODAY, uid, RECURRING_SEPARATOR } from "./constants.js";
-import { expandRecurring, exportICS } from "./utils.js";
+import { expandRecurring, exportICS, weekRangeLabel } from "./utils.js";
 
 describe("WEEK", () => {
   test("has 7 ISO dates", () => {
@@ -17,6 +17,15 @@ describe("WEEK", () => {
   });
   test("TODAY falls within the current week", () => {
     expect(WEEK).toContain(TODAY);
+  });
+});
+
+describe("weekRangeLabel", () => {
+  test("same-month week collapses the second month", () => {
+    expect(weekRangeLabel(["2026-06-15", "2026-06-21"])).toBe("Jun 15 – 21, 2026");
+  });
+  test("cross-month week names both months", () => {
+    expect(weekRangeLabel(["2026-06-29", "2026-07-05"])).toBe("Jun 29 – Jul 5, 2026");
   });
 });
 

@@ -1,4 +1,13 @@
-import { SEED, STORAGE_KEYS } from './constants.js';
+// storage.js — loading and saving app data.
+//
+// Two backends, picked automatically:
+//   • Supabase (cloud)  — when VITE_SUPABASE_* env vars were set at build time.
+//     This is what lets the Siri Shortcut insert tasks from a phone.
+//   • localStorage      — fallback so the app still works with no backend.
+//
+// Tasks use camelCase in the app and snake_case in the database;
+// toRow/fromRow translate between the two.
+import { SEED, STORAGE_KEYS, MEMBERS } from './constants.js';
 import { supabase } from './supabase.js';
 
 // ---------- Supabase column mapping ----------
@@ -108,7 +117,7 @@ export async function persistData(tasks) {
 // ---------- User + API key (always local) ----------
 
 export async function loadUser() {
-  try { return localStorage.getItem(STORAGE_KEYS.user) || 'Bhargav'; } catch { return 'Bhargav'; }
+  try { return localStorage.getItem(STORAGE_KEYS.user) || MEMBERS[0]; } catch { return MEMBERS[0]; }
 }
 
 export async function saveUser(userName) {

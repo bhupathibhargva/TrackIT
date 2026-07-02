@@ -1,3 +1,6 @@
+// Sidebar — the dark navigation rail: brand, avatar user switcher, view
+// links, and the Alerts / Settings buttons with a sync indicator.
+// Desktop: always visible. Mobile: a temporary drawer toggled by ☰.
 import {
   Drawer, List, ListItemButton, ListItemIcon, ListItemText,
   Box, Typography, Divider, Badge, Stack,

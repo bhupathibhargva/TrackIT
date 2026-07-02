@@ -7,6 +7,8 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { CATS, WEEK, MEMBERS } from '../constants.js';
 
+// TaskModal — the add/edit form. With a `task` prop it edits that task;
+// without one it starts from BLANK_TASK and creates a new one on save.
 const BLANK_TASK = {
   title: '', category: 'tasks', priority: 3, assignee: 'Both', dueDate: '',
   duration: 30, notes: '', done: false, scheduledDate: null, scheduledTime: null,
@@ -21,6 +23,15 @@ export function TaskModal({ task: initialTask, onSave, onClose }) {
   const [form, setForm] = useState(initialTask ?? BLANK_TASK);
 
   const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  // Weekly tasks repeat on the weekday of their scheduledDate, so one must be
+  // set. Default to Monday when the user switches to weekly — otherwise an
+  // untouched form would save scheduledDate: null and never show up.
+  const setRecurrence = (value) => setForm(prev => ({
+    ...prev,
+    recurrence: value || null,
+    scheduledDate: value === 'weekly' ? (prev.scheduledDate ?? WEEK[0]) : prev.scheduledDate,
+  }));
 
   return (
     <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
@@ -69,7 +80,7 @@ export function TaskModal({ task: initialTask, onSave, onClose }) {
             </FormControl>
             <FormControl fullWidth size="small">
               <InputLabel>Repeats</InputLabel>
-              <Select label="Repeats" value={form.recurrence ?? ''} onChange={e => setField('recurrence', e.target.value || null)}>
+              <Select label="Repeats" value={form.recurrence ?? ''} onChange={e => setRecurrence(e.target.value)}>
                 <MenuItem value="">One-time</MenuItem>
                 <MenuItem value="daily">🔄 Daily</MenuItem>
                 <MenuItem value="weekly">🔄 Weekly</MenuItem>
@@ -88,7 +99,7 @@ export function TaskModal({ task: initialTask, onSave, onClose }) {
             <TextField
               label="Duration (mins)" type="number"
               value={form.duration}
-              onChange={e => setField('duration', +e.target.value)}
+              onChange={e => setField('duration', e.target.value)}
               inputProps={{ min: 5, step: 5 }}
               fullWidth size="small"
             />
@@ -139,7 +150,11 @@ export function TaskModal({ task: initialTask, onSave, onClose }) {
         <Button
           variant="contained"
           disabled={!form.title.trim()}
-          onClick={() => { if (form.title.trim()) onSave({ ...form, completedDates: form.completedDates ?? [] }); }}
+          // Coerce duration on save: a cleared number field would otherwise save NaN.
+          onClick={() => {
+            if (!form.title.trim()) return;
+            onSave({ ...form, duration: Number(form.duration) || 30, completedDates: form.completedDates ?? [] });
+          }}
         >
           {initialTask ? 'Save Changes' : 'Add Task'}
         </Button>

@@ -1,3 +1,5 @@
+// NotifPanel — the right-hand "Alerts" drawer, grouping tasks into
+// Overdue / Today / This Week sections.
 import { Drawer, Box, Typography, IconButton, Stack } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { TODAY, WEEK } from '../constants.js';
